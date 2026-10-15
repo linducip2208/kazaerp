@@ -12,10 +12,28 @@ class ApprovalService {
         foreach ($matrix as $m) {
             if ($amount >= (float) $m->min_amount) $level = (int) $m->level;
         }
-        return DB::table('approvals')->insertGetId([
+        $id = DB::table('approvals')->insertGetId([
             'doc_type' => $docType, 'doc_id' => $docId, 'level' => $level, 'status' => 'pending',
             'requested_by' => auth()->id(), 'created_at' => now(), 'updated_at' => now(),
         ]);
+        NotifyService::sendToPerm('governance.approve', 'Approval baru: '.$docType.' #'.$docId, '/gov/approvals');
+
+        return $id;
+    }
+    /** Cek delegasi aktif: delegate boleh bertindak atas nama delegator. */
+    public static function delegatedFrom(int $delegateId, int $delegatorId, ?string $docType = null): bool
+    {
+        $today = now()->toDateString();
+
+        return DB::table('approval_delegations')
+            ->where('delegate_id', $delegateId)->where('delegator_id', $delegatorId)
+            ->where('is_active', true)->where('from_date', '<=', $today)->where('to_date', '>=', $today)
+            ->where(function ($q) use ($docType) {
+                $q->whereNull('doc_type');
+                if ($docType) {
+                    $q->orWhere('doc_type', $docType);
+                }
+            })->exists();
     }
     public static function decide(int $approvalId, string $decision, ?string $note = null): void {
         DB::transaction(function () use ($approvalId, $decision, $note) {
@@ -32,6 +50,9 @@ class ApprovalService {
                 'approval_id' => $approvalId, 'action' => $decision, 'actor_id' => auth()->id(),
                 'note' => $note, 'created_at' => now(), 'updated_at' => now(),
             ]);
+            if ($a->requested_by) {
+                NotifyService::send((int) $a->requested_by, 'Approval '.$decision.': '.$a->doc_type.' #'.$a->doc_id, '/gov/approvals');
+            }
         });
     }
 }

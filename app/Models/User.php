@@ -4,8 +4,9 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Facades\DB;
+use Laravel\Sanctum\HasApiTokens;
 class User extends Authenticatable {
-    use HasFactory, Notifiable;
+    use HasFactory, Notifiable, HasApiTokens;
     protected $fillable = ['name','email','password','is_active','holding_id','legal_entity_id','branch_id','last_login_at'];
     protected $hidden = ['password','remember_token'];
     protected function casts(): array {

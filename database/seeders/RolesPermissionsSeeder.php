@@ -56,6 +56,11 @@ class RolesPermissionsSeeder extends Seeder {
             $pid = DB::table('permissions')->where('name',$p)->value('id');
             if ($pid) DB::table('permission_role')->updateOrInsert(['role_id'=>$cs,'permission_id'=>$pid],[]);
         }
+        // Auditor: read-only lintas modul + audit + laporan
+        $au = DB::table('roles')->where('name','auditor')->value('id');
+        foreach (DB::table('permissions')->where(function($q){ $q->where('name','like','%.view')->orWhereIn('name',['audit.view','reports.view','reports.export','api.access']); })->pluck('id') as $pid) {
+            DB::table('permission_role')->updateOrInsert(['role_id'=>$au,'permission_id'=>$pid],[]);
+        }
         // Module operator: operasional lintas modul non-sensitif (tanpa finance.post/approve/close, hr.salary/payroll, audit)
         $mo = DB::table('roles')->where('name','module_operator')->value('id');
         foreach (['org.view','crm.view','crm.create','crm.update','crm.convert','sales.view','sales.create','sales.approve','sales.void','inventory.view','inventory.receive','inventory.issue','inventory.transfer','purchasing.view','purchasing.create','purchasing.receive','finance.view','hr.view','hr.manage','pet.view','pet.treat','pet.groom','pet.board','pet.transport','mfg.view','mfg.plan','thrift.view','thrift.manage','thrift.live','studio.view','studio.manage','rental.view','rental.manage','marketing.view','marketing.manage','reports.view','reports.export','governance.view'] as $p) {
