@@ -11,7 +11,7 @@ Modular monolith Laravel 11 (bukan microservices).
 | Routes | `routes/modules/*.php` (org, master, sales, ops, finance_hr, business) + `routes/web.php` |
 | Views | `resources/views/modules/<domain>/` + `components/` generik (index/form/show/doc-lines) |
 | Tests | `tests/Feature/*`, `tests/Unit/*` (MySQL) |
-| Middleware | `perm` (CheckPermission), `ctx` (ActiveContext), throttle login |
+| Middleware | `perm` (CheckPermission), `ctx` (ActiveContext), `ReadOnlyRoles` (auditor/viewer murni read-only), `SecurityHeaders`, `CheckActiveUser`, throttle login |
 
 Alasan alternatif vs `app/Modules/...`: mengikuti konvensi Laravel (autoload `App\`, artisan, policy discovery) sambil mempertahankan boundary domain lewat namespace + route files + services. Didokumentasikan di sini sesuai mandat.
 

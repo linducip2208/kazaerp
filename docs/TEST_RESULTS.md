@@ -1,6 +1,17 @@
 # Test Results (dari run nyata — bukan klaim)
 
-## Suite penuh v0.4.0 — 2026-10-15 (MySQL `kazaerp_testing`)
+## Suite penuh v0.4.1 — 2026-10-15 (MySQL `kazaerp_testing`)
+- Perintah: `php artisan test`
+- Hasil: **36 passed, 0 failed, 0 skipped — 233 assertions** (durasi 1366,34s)
+- 32 test v0.1–v0.4.0 tetap hijau (regresi nihil) + 4 test Phase5Test baru:
+  - read-only enforcement: auditor baca lintas modul 200 tapi POST tulis 403; viewer tetap 403 walau permission tulis diberikan (defense-in-depth); auditor+branch_manager boleh menulis; self-service profil tetap diizinkan
+  - reset password mandiri: email tak dikenal ditolak; token diambil dari notifikasi; token salah ditolak; token benar → password berubah (hash baru, password lama mati)
+  - queue worker nyata: `SendOverdueInvoiceAlert` di-dispatch ke antrean `database` → `queue:work --once` memproses → notifikasi terbuat & antrean bersih
+  - backup command: `kaza:backup` menghasilkan file .gz > 1KB dengan magic gzip valid (dump nyata DB test)
+- Uji operasional backup/restore (dev DB, 15 Okt 2026): `kaza:backup` → 25.739 bytes; restore ke DB scratch `kazaerp_restore_verify` via `mysql` → **178 tabel / 17 migrations / users=2 / products=1 identik dengan sumber**; scratch DB di-drop setelah verifikasi (tidak ada data tersentuh).
+- DB pengujian: MySQL (locking & constraints nyata). Log: `storage/logs/v041_full.log`.
+
+## Riwayat v0.4.0 (arsip) — 2026-10-15 (MySQL `kazaerp_testing`)
 - Perintah: `php artisan test`
 - Hasil: **32 passed, 0 failed, 0 skipped — 204 assertions** (durasi 1449,92s)
 - 26 test v0.1–v0.3 tetap hijau (regresi nihil) + 6 test Phase4Test baru:

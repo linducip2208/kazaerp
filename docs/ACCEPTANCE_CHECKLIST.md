@@ -19,10 +19,13 @@
 - [x] Komisi akrual saat lunas + approve Finance (test)
 - [x] API POS (shift/checkout) + GPS positions (test)
 - [x] Notifikasi jatuh tempo via queue + scheduler (test)
+- [x] Read-only auditor/viewer ditegakkan server-side (test)
+- [x] Reset password mandiri (forgot → token → reset) (test)
 - [ ] UAT tanda tangan owner & Finance (PENDING)
 
 ## Keamanan/Data/Deploy/Go-live
 - [x] Permission per menu, 403/404/500, tanpa CDN, secret tidak di-log
 - [x] Migrate fresh + seed + build + route:list + smoke
-- [ ] HTTPS, backup/restore teruji, kredensial produksi, reset password mandiri (lihat DEPLOYMENT)
+- [x] Backup & restore teruji (dump dev → restore DB scratch → 178 tabel + baris kunci identik, 15 Okt 2026)
+- [ ] HTTPS produksi, kredensial produksi (lihat DEPLOYMENT)
 - [ ] Keputusan PENDING_BUSINESS_DECISION disetujui sebelum go-live

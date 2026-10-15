@@ -1,5 +1,12 @@
 # Changelog
 
+## v0.4.1 — 2026-10-15
+- Read-only enforcement server-side: middleware `ReadOnlyRoles` menolak operasi tulis akun yang hanya berperan auditor/viewer (defense-in-depth; self-service logout/profil/2FA/konteks/notifikasi dikecualikan).
+- Reset password mandiri diuji penuh (forgot → notifikasi token → reset → hash baru; token salah ditolak).
+- Queue worker diverifikasi end-to-end: job di-drain `queue:work --once` (antrean database → notifikasi terbuat, antrean bersih).
+- Backup & restore terverifikasi: dump dev DB → restore ke DB scratch → 178 tabel & baris kunci identik.
+- Test Phase5Test (4 test / 29 assertions) — hijau; suite penuh **36 passed / 233 assertions / 0 failed** (TEST_RESULTS.md).
+
 ## v0.4.0 — 2026-10-15
 - Harga tier otomatis per pelanggan (retail/wholesale/reseller) di SO/invoice/quotation/POS + API (`PriceService`).
 - QC/karantina batch: lot GRN → batch otomatis, halaman Batch & QC; stok keluar diblokir untuk batch pending/quarantine/rejected/kedaluwarsa.

@@ -9,6 +9,7 @@ Aktor: pengguna internal lintas cabang, mantan karyawan (akun aktif), penyerang 
 - Sesi dicabut seketika bila akun dinonaktifkan (middleware CheckActiveUser).
 - Header keamanan: nosniff, SAMEORIGIN, referrer; HSTS + CSP ketat di production.
 - Authorization: middleware `perm` + scope entity di semua query sensitif + `inScope()`; super_admin bypass eksplisit.
+- Read-only enforcement: middleware `ReadOnlyRoles` — akun yang hanya berperan auditor/viewer tidak bisa menulis (non-GET ditolak 403) meski permission tulis salah dikonfigurasi; whitelist self-service (logout, konteks, profil, 2FA, tandai notifikasi). Bukti: `tests/Feature/Phase5Test.php`.
 - API v1: semua endpoint butuh token ability `api.access` + guard entitas per resource (hanya peran lintas-entitas yang boleh akses lintas entitas); POS/GPS juga cek `pos.operate`/`pos.shift`/`pet.transport`.
 - Isolasi dibuktikan IsolationTest (404 lintas entitas, payroll 403 untuk cashier).
 - Audit: `audit_logs` (aktor, waktu, entitas, aksi, ref, perubahan — tanpa secret) + `login_activities` + `doc_status_histories`.

@@ -12,5 +12,9 @@
   GRN lot → batch otomatis, karantina/expired memblokir stok keluar, audit `quality_checks`; WO snapshot biaya standar → issue (aktual) → produce → variance + issue ulang ditolak;
   komisi akrual saat invoice lunas (rate config) + approve Finance; API POS shift/open/close/checkout (harga tier + potong stok + selisih) + GPS positions push/read + 403 lintas entitas;
   queue overdue alerts (dispatch via Queue::fake + eksekusi job + idempoten 24 jam + invoice lunas dilewati) + smoke halaman baru.
+- Phase5 (`tests/Feature/Phase5Test.php`): read-only enforcement (auditor baca lintas modul OK & tulis 403; viewer tetap 403 walau diberi permission tulis; auditor+branch_manager boleh menulis; self-service profil diizinkan);
+  reset password mandiri penuh (email tak dikenal ditolak; token diambil dari notifikasi; token salah ditolak; reset sukses → hash baru, password lama mati);
+  queue worker nyata (job di-dispatch ke antrean database → `queue:work --once` memproses → notifikasi terbuat & antrean bersih);
+  backup command (file .gz terbentuk, > 1KB, magic gzip; skip bila `mysqldump` tidak tersedia).
 - Acceptance: checklist + smoke HTTP 22 halaman (login, CRUD, POS, laporan) — bukti di TEST_RESULTS.md.
 - Regresi: full `php artisan test` tiap perubahan; static: `php -l` per file + `composer validate`.

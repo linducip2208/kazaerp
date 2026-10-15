@@ -16,6 +16,7 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
         $middleware->append(\App\Http\Middleware\SecurityHeaders::class);
         $middleware->appendToGroup('web', \App\Http\Middleware\CheckActiveUser::class);
+        $middleware->appendToGroup('web', \App\Http\Middleware\ReadOnlyRoles::class);
     })
     ->withExceptions(function (Exceptions $exceptions) {
         //

@@ -22,7 +22,7 @@ thrift, studio, rental, marketing, reports, governance. Lihat `RolesPermissionsS
 | Payroll proses | ✓ | — | — | — | — | — |
 | Approve governance | ✓ | ✓ | — | — | — | view |
 
-Entity scope: `user_scopes(scope_type=legal_entity|branch)`. Branch manager terikat cabang; super_admin/holding_owner/executive/auditor lintas (auditor read-only via viewer-like + audit.view — PENDING: batasi ke read di semua modul).
+Entity scope: `user_scopes(scope_type=legal_entity|branch)`. Branch manager terikat cabang; super_admin/holding_owner/executive/auditor lintas (auditor read-only: ditegakkan server-side oleh middleware `ReadOnlyRoles` — pengguna yang HANYA berperan auditor/viewer diblokir dari operasi tulis apa pun, walau permission tulis salah diberikan; self-service logout/profil/2FA/konteks tetap diizinkan).
 
 ## Pemetaan menu v0.4 (tanpa permission baru)
 - Inventory → Batch & QC: `inventory.view` (lihat), `inventory.adjust` (release/karantina/reject).

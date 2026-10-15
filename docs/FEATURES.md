@@ -42,7 +42,9 @@
 | F-GOV-03 | Notifikasi DB + bell | P2 | DONE | NotifyService, NotificationController |
 | F-DASH-01 | Dashboard per-peran + tren 6 bln | P1 | DONE | DashboardController, Chart.js lokal |
 | F-API-01 | API v1 token + guard entitas | P2 | DONE | routes/api.php, Phase2Test |
-| F-OPS-01 | Backup command + scheduler + AdminSeeder | P2 | DONE | kaza:backup, console.php, AdminSeeder |
+| F-OPS-01 | Backup command + scheduler + AdminSeeder | P2 | DONE | kaza:backup (dump+restore teruji), console.php, AdminSeeder |
+| F-SEC-02 | Read-only auditor/viewer ditegakkan server-side | P1 | DONE | ReadOnlyRoles, Phase5Test |
+| F-AUTH-04 | Reset password mandiri (forgot→token→reset) | P1 | DONE | PasswordResetController, Phase5Test |
 | F-SEC-01 | Security headers + cabut sesi nonaktif | P1 | DONE | SecurityHeaders, CheckActiveUser |
 | F-AUTH-03 | 2FA TOTP + challenge + QR lokal | P1 | DONE | TwoFactorController, Phase3Test |
 | F-FILE-01 | File privat + download terotorisasi + isolasi | P0 | DONE | SecureFileController, Phase3Test |
@@ -56,5 +58,5 @@
 | F-MFG-02 | Output/variance produksi (standar vs aktual, cap qty) | P1 | DONE | WorkOrderController, Phase4Test |
 | F-API-02 | API POS: shift open/close + checkout (harga tier) | P2 | DONE | Api\PosController, PosService, Phase4Test |
 | F-API-03 | GPS transport: push posisi + tracking web | P2 | DONE | Api\TransportController, TransportTrackingController, Phase4Test |
-| F-OPS-02 | Queue worker: overdue alerts (job + scheduler 08:00) | P2 | DONE | SendOverdueInvoiceAlert, kaza:overdue-alerts, Phase4Test |
+| F-OPS-02 | Queue worker: overdue alerts (job + scheduler 08:00) | P2 | DONE | SendOverdueInvoiceAlert, kaza:overdue-alerts, Phase4Test, drain `queue:work` Phase5Test |
 | F-DELTA-01 | Eliminasi intercompany otomatis (menunggu kebijakan) | P3 | PENDING | DECISIONS #4 |
