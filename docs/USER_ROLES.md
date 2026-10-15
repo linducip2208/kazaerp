@@ -23,3 +23,10 @@ thrift, studio, rental, marketing, reports, governance. Lihat `RolesPermissionsS
 | Approve governance | ✓ | ✓ | — | — | — | view |
 
 Entity scope: `user_scopes(scope_type=legal_entity|branch)`. Branch manager terikat cabang; super_admin/holding_owner/executive/auditor lintas (auditor read-only via viewer-like + audit.view — PENDING: batasi ke read di semua modul).
+
+## Pemetaan menu v0.4 (tanpa permission baru)
+- Inventory → Batch & QC: `inventory.view` (lihat), `inventory.adjust` (release/karantina/reject).
+- MFG Work Order issue/produce: `mfg.execute`.
+- Finance → Komisi Penjualan: `finance.view` (lihat), `finance.approve` (approve/cancel).
+- Pet & Transport → Tracking GPS (web + API positions): `pet.transport`.
+- API POS: `pos.operate`/`pos.shift`; semua API butuh token ability `api.access` dari login.

@@ -50,4 +50,11 @@
 | F-THR-02 | Alokasi biaya lot (rata/proporsional) | P2 | DONE | LotController@allocate, Phase3Test |
 | F-MKT-02 | Voucher apply + loyalty accrual | P2 | DONE | VoucherService, Phase3Test |
 | F-REP-02 | Stok menua, worksheet intercompany, budget vs aktual, rekonsiliasi bank | P1 | DONE | Report/FinanceReport/BankRecController |
-| F-DELTA-01 | Grafik tren dashboard, eliminasi intercompany otomatis, worker/queue, approval delegasi UI | P3 | PENDING | ROADMAP |
+| F-SAL-06 | Harga tier otomatis per pelanggan (retail/wholesale/reseller) | P1 | DONE | PriceService, Phase4Test |
+| F-SAL-07 | Komisi penjualan: akrual saat lunas + approve Finance | P2 | DONE | CommissionService, Finance\CommissionController, Phase4Test |
+| F-INV-03 | QC/karantina batch + guard keluar (quarantine/expired) | P1 | DONE | BatchController, StockService, Phase4Test |
+| F-MFG-02 | Output/variance produksi (standar vs aktual, cap qty) | P1 | DONE | WorkOrderController, Phase4Test |
+| F-API-02 | API POS: shift open/close + checkout (harga tier) | P2 | DONE | Api\PosController, PosService, Phase4Test |
+| F-API-03 | GPS transport: push posisi + tracking web | P2 | DONE | Api\TransportController, TransportTrackingController, Phase4Test |
+| F-OPS-02 | Queue worker: overdue alerts (job + scheduler 08:00) | P2 | DONE | SendOverdueInvoiceAlert, kaza:overdue-alerts, Phase4Test |
+| F-DELTA-01 | Eliminasi intercompany otomatis (menunggu kebijakan) | P3 | PENDING | DECISIONS #4 |

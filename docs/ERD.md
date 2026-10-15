@@ -35,9 +35,11 @@ erDiagram
     PETS ||--o{ BOARDING_RESERVATIONS : boards
     BOARDING_ROOMS ||--o{ BOARDING_RESERVATIONS : hosts
     TRANSPORT_ORDERS ||--o{ TRIPS : trips
+    TRIPS ||--o{ TRANSPORT_POSITIONS : tracks
     DESIGNS ||--o{ DESIGN_VERSIONS : versions
     PRODUCTS ||--o{ BOMS : has
     BOMS ||--o{ WORK_ORDERS : locked
+    WORK_ORDERS ||--o{ WORK_ORDER_LINES : has
     THRIFT_LOTS ||--o{ THRIFT_ITEMS : contains
     THRIFT_ITEMS ||--o{ LIVE_ORDERS : sold
     STUDIO_PROJECTS ||--o{ STUDIO_DELIVERABLES : delivers

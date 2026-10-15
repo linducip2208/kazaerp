@@ -91,6 +91,7 @@ $notifCount = DB::table('notifications')->where('user_id', auth()->id())->whereN
 <div class="dropdown-menu">
 <a class="dropdown-item" href="{{ route('inventory.stock.index') }}">Stok & Kartu Stok</a>
 <a class="dropdown-item" href="{{ route('inventory.receipts.index') }}">Penerimaan</a>
+<a class="dropdown-item" href="{{ route('inventory.batches.index') }}">Batch & QC</a>
 </div></li>
 @endif
 @if($u->hasPermission('purchasing.view'))
@@ -112,6 +113,7 @@ $notifCount = DB::table('notifications')->where('user_id', auth()->id())->whereN
 <a class="dropdown-item" href="{{ route('finance.budget') }}">Budget vs Aktual</a>
 <a class="dropdown-item" href="{{ route('finance.bankrec.index') }}">Rekonsiliasi Bank</a>
 <a class="dropdown-item" href="{{ route('finance.aging') }}">Aging AR/AP</a>
+<a class="dropdown-item" href="{{ route('finance.commissions.index') }}">Komisi Penjualan</a>
 <a class="dropdown-item" href="{{ route('finance.intercompany') }}">Worksheet Intercompany</a>
 <a class="dropdown-item" href="{{ route('finance.closing') }}">Tutup Periode</a>
 </div></li>
@@ -133,6 +135,7 @@ $notifCount = DB::table('notifications')->where('user_id', auth()->id())->whereN
 <a class="dropdown-item" href="{{ route('pet.grooming.index') }}">Grooming</a>
 <a class="dropdown-item" href="{{ route('pet.boarding.index') }}">Pet Hotel</a>
 <a class="dropdown-item" href="{{ route('pet.transport.index') }}">Transport</a>
+@if($u->hasPermission('pet.transport'))<a class="dropdown-item" href="{{ route('pet.transport.tracking') }}">Tracking GPS</a>@endif
 </div></li>
 @endif
 @if($u->hasPermission('mfg.view')||$u->hasPermission('thrift.view')||$u->hasPermission('studio.view')||$u->hasPermission('rental.view'))

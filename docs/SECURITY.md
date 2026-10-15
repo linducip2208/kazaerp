@@ -9,6 +9,7 @@ Aktor: pengguna internal lintas cabang, mantan karyawan (akun aktif), penyerang 
 - Sesi dicabut seketika bila akun dinonaktifkan (middleware CheckActiveUser).
 - Header keamanan: nosniff, SAMEORIGIN, referrer; HSTS + CSP ketat di production.
 - Authorization: middleware `perm` + scope entity di semua query sensitif + `inScope()`; super_admin bypass eksplisit.
+- API v1: semua endpoint butuh token ability `api.access` + guard entitas per resource (hanya peran lintas-entitas yang boleh akses lintas entitas); POS/GPS juga cek `pos.operate`/`pos.shift`/`pet.transport`.
 - Isolasi dibuktikan IsolationTest (404 lintas entitas, payroll 403 untuk cashier).
 - Audit: `audit_logs` (aktor, waktu, entitas, aksi, ref, perubahan — tanpa secret) + `login_activities` + `doc_status_histories`.
 - File: upload validasi tipe/ukuran (maks 10MB, daftar mime eksplisit) ke `storage/app/private`;

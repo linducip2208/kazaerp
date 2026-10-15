@@ -8,5 +8,9 @@
 - Phase3 (`tests/Feature/Phase3Test.php`): 2FA penuh (setup QR, confirm, challenge, dashboard non-admin 200);
   file privat (upload OK se-entitas, 403 lintas entitas); vet butuh pet.treat; alokasi equal dan price;
   voucher (salah ditolak, diskon + used + poin loyalty); bankrec matched/draft + halaman budget/aging/intercompany.
+- Phase4 (`tests/Feature/Phase4Test.php`): harga tier (invoice default tier + override + halaman + API price/tier pelanggan);
+  GRN lot → batch otomatis, karantina/expired memblokir stok keluar, audit `quality_checks`; WO snapshot biaya standar → issue (aktual) → produce → variance + issue ulang ditolak;
+  komisi akrual saat invoice lunas (rate config) + approve Finance; API POS shift/open/close/checkout (harga tier + potong stok + selisih) + GPS positions push/read + 403 lintas entitas;
+  queue overdue alerts (dispatch via Queue::fake + eksekusi job + idempoten 24 jam + invoice lunas dilewati) + smoke halaman baru.
 - Acceptance: checklist + smoke HTTP 22 halaman (login, CRUD, POS, laporan) — bukti di TEST_RESULTS.md.
 - Regresi: full `php artisan test` tiap perubahan; static: `php -l` per file + `composer validate`.

@@ -20,6 +20,9 @@ Route::middleware(['auth','ctx'])->prefix('finance')->name('finance.')->group(fu
     Route::get('closing', [\App\Http\Controllers\Finance\FinanceReportController::class,'closing'])->name('closing')->middleware('perm:finance.close');
     Route::post('closing/close', [\App\Http\Controllers\Finance\FinanceReportController::class,'doClose'])->name('closing.close')->middleware('perm:finance.close');
     Route::post('closing/reopen', [\App\Http\Controllers\Finance\FinanceReportController::class,'reopen'])->name('closing.reopen')->middleware('perm:finance.close');
+    Route::get('commissions', [\App\Http\Controllers\Finance\CommissionController::class,'index'])->name('commissions.index')->middleware('perm:finance.view');
+    Route::post('commissions/{id}/approve', [\App\Http\Controllers\Finance\CommissionController::class,'approve'])->name('commissions.approve')->middleware('perm:finance.approve');
+    Route::post('commissions/{id}/cancel', [\App\Http\Controllers\Finance\CommissionController::class,'cancel'])->name('commissions.cancel')->middleware('perm:finance.approve');
 });
 Route::middleware(['auth','ctx'])->prefix('hr')->name('hr.')->group(function () {
     Route::resource('employees', \App\Http\Controllers\Hr\EmployeeController::class)->middleware('perm:hr.view');

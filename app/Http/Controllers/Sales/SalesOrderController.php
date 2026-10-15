@@ -22,22 +22,25 @@ class SalesOrderController extends CrudController {
         return view($this->viewPrefix.'.index', ['rows'=>$rows,'meta'=>$this->meta()]);
     }
     public function create() {
+        $r = request();
         $ctx = session('erp_context',[]); $eid = $ctx['legal_entity_id'] ?? auth()->user()->legal_entity_id;
+        $customers = \App\Models\Master\Customer::where('legal_entity_id',$eid)->orderBy('name')->get();
+        $customer = $r->filled('customer_id') ? $customers->firstWhere('id',(int)$r->get('customer_id')) : $customers->first();
         return view($this->viewPrefix.'.form', ['meta'=>$this->meta(),
-            'customers'=>\App\Models\Master\Customer::where('legal_entity_id',$eid)->orderBy('name')->get(),
-            'products'=>\App\Models\Master\Product::where('legal_entity_id',$eid)->where('is_sellable',true)->orderBy('name')->get()]);
+            'customers'=>$customers,'customer'=>$customer,
+            'products'=>\App\Services\PriceService::productOptions($eid, $customer?->tier)]);
     }
     public function store(Request $r) {
         $r->validate(['customer_id'=>'required|exists:customers,id','date'=>'required|date',
             'lines'=>'required|array|min:1','lines.*.product_id'=>'required|exists:products,id',
-            'lines.*.qty'=>'required|numeric|min:0.0001','lines.*.price'=>'required|numeric|min:0',
+            'lines.*.qty'=>'required|numeric|min:0.0001','lines.*.price'=>'nullable|numeric|min:0',
             'discount'=>'nullable|numeric|min:0']);
         $u = auth()->user(); $ctx = session('erp_context',[]);
         $eid = $ctx['legal_entity_id'] ?? $u->legal_entity_id; $bid = $ctx['branch_id'] ?? $u->branch_id;
         $cust = \App\Models\Master\Customer::findOrFail($r->customer_id);
         if ((int)$cust->legal_entity_id !== (int)$eid) abort(403,'Pelanggan beda entitas.');
         try {
-        $id = DB::transaction(function() use ($r,$eid,$bid,$u) {
+        $id = DB::transaction(function() use ($r,$eid,$bid,$u,$cust) {
             $ent = \App\Models\Org\LegalEntity::find($eid); $br = \App\Models\Org\Branch::find($bid);
             $number = DocNumberService::next('SO',$eid,$bid,$ent?->code,$br?->code);
             $sub=0; $lines=[];
@@ -45,10 +48,12 @@ class SalesOrderController extends CrudController {
                 $p = \App\Models\Master\Product::findOrFail($l['product_id']);
                 if ((int)$p->legal_entity_id !== (int)$eid) throw new \RuntimeException('Produk beda entitas: '.$p->sku);
                 if (!$p->is_sellable) throw new \RuntimeException('Produk tidak dapat dijual: '.$p->sku);
-                if ((float)$l['price'] < 0) throw new \RuntimeException('Harga tidak valid.');
-                $lt = (float)$l['qty'] * (float)$l['price'];
+                $inPrice = $l['price'] ?? null;
+                $price = ($inPrice === null || $inPrice === '') ? \App\Services\PriceService::forCustomer($p,$cust) : (float)$inPrice;
+                if ($price < 0) throw new \RuntimeException('Harga tidak valid.');
+                $lt = (float)$l['qty'] * $price;
                 $sub += $lt;
-                $lines[] = ['product_id'=>$p->id,'snapshot_name'=>$p->name,'qty'=>$l['qty'],'price'=>$l['price'],'discount'=>0,'tax_rate'=>11,'line_total'=>$lt*1.11,'created_at'=>now(),'updated_at'=>now()];
+                $lines[] = ['product_id'=>$p->id,'snapshot_name'=>$p->name,'qty'=>$l['qty'],'price'=>$price,'discount'=>0,'tax_rate'=>11,'line_total'=>$lt*1.11,'created_at'=>now(),'updated_at'=>now()];
             }
             $disc = (float)($r->discount ?? 0);
             if ($disc > $sub) throw new \RuntimeException('Diskon melebihi subtotal.');

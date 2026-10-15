@@ -7,10 +7,10 @@ Holding, badan usaha (+kepemilikan), brand, unit bisnis, cabang, lokasi, gudang,
 Customer, supplier, kontak, alamat, produk (+varian, barcode), kategori, satuan, pajak, price list, payment terms, channel, lead source, tags, notes, attachments. Lead→opportunity→konversi anti-duplikat.
 
 ## Sales & POS (`sales.*`)
-Quotation, SO (+approval+reservasi), DO, invoice (+snapshot, posting otomatis), credit note, retur, deposit, pembayaran partial, komisi, POS + shift + selisih kas.
+Quotation, SO (+approval+reservasi), DO, invoice (+snapshot, posting otomatis), credit note, retur, deposit, pembayaran partial, komisi (akrual saat lunas + approve finance), harga tier otomatis per pelanggan (retail/wholesale/reseller), POS + shift + selisih kas.
 
 ## Inventory (`inventory.*`)
-Bin, batch/lot + expiry + QC/karantina, ledger (sumber kebenaran), saldo, GRN/GI, transfer, reservasi, count, adjustment, serial, kartu stok, alert menipis.
+Bin, batch/lot + expiry + QC/karantina (halaman Batch & QC: release/quarantine/reject; batch auto dari lot GRN; keluar diblokir untuk batch belum released/kedaluwarsa), ledger (sumber kebenaran), saldo, GRN/GI, transfer, reservasi, count, adjustment, serial, kartu stok, alert menipis.
 
 ## Purchasing (`purchasing.*`)
 PR (+darurat beralasan), RFQ + komparasi, PO (+versi/amendment), partial receipt, QC, vendor invoice + three-way matching (exception→HOLD), deteksi duplikat, retur, evaluasi vendor.
@@ -22,10 +22,10 @@ COA per entitas, jurnal (balance/idempotent/reversal), kas/bank, transfer, rekon
 Karyawan, jabatan, riwayat, shift, absensi, cuti + saldo, lembur, periode payroll, komponen configurable, hitung + approval + slip PDF.
 
 ## Pet & Transport (`pet.*`)
-Owner, pet, janji vet, konsultasi (akses peran), treatment, grooming + antrean, kamar + kalender + log harian, transport order + trip + biaya.
+Owner, pet, janji vet, konsultasi (akses peran), treatment, grooming + antrean, kamar + kalender + log harian, transport order + trip + biaya + tracking GPS (driver push posisi via API → halaman tracking + link peta OSM).
 
 ## Apparel & MFG (`mfg.*`)
-Koleksi, desain + versi file + approval, BOM versi terkunci di WO, output/reject.
+Koleksi, desain + versi file + approval, BOM versi terkunci di WO, issue material (biaya standar snapshot → aktual), output/reject + cap qty, variance biaya (favorable/unfavorable), FG receipt ke gudang.
 
 ## Thrift & Live (`thrift.*`)
 Lot + alokasi biaya, sortir/grade, item unik + foto, sesi live, reservasi anti double-sell, deadline bayar, komisi.

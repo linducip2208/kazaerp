@@ -1,6 +1,18 @@
 # Test Results (dari run nyata — bukan klaim)
 
-## Suite penuh v0.3.0 — 2026-10-15 (MySQL `kazaerp_testing`)
+## Suite penuh v0.4.0 — 2026-10-15 (MySQL `kazaerp_testing`)
+- Perintah: `php artisan test`
+- Hasil: **32 passed, 0 failed, 0 skipped — 204 assertions** (durasi 1449,92s)
+- 26 test v0.1–v0.3 tetap hijau (regresi nihil) + 6 test Phase4Test baru:
+  - harga tier (invoice harga kosong → tier wholesale; override manual dihormati; halaman create; API `products?customer_id` + `/products/{id}/price`)
+  - GRN lot → batch otomatis; karantina/kedaluwarsa memblokir stok keluar; audit `quality_checks`
+  - WO snapshot biaya standar (5.000) → issue biaya aktual naik (6.000) → variance −2.000 → produce masuk FG → issue ulang ditolak
+  - komisi akrual saat invoice lunas (rate config 5% × 30.000 = 1.500) + approve Finance
+  - API POS shift open/close/checkout (harga tier 24.000 + PPN 11% = 26.640; stok 10→8) + GPS positions push/read + 403 lintas entitas
+  - queue overdue alerts (dispatch `Queue::fake`, eksekusi job, idempoten 24 jam, invoice lunas dilewati) + smoke 6 halaman baru
+- DB pengujian: MySQL (locking & constraints nyata). Log: `storage/logs/v040_full.log` (rincian Phase4: `storage/logs/phase4_final.log`).
+
+## Riwayat v0.3.0 (arsip) — 2026-10-15 (MySQL `kazaerp_testing`)
 - Perintah: `php artisan test`
 - Hasil: **26 passed, 0 failed, 0 skipped — 119 assertions**
 - 20 test v0.1–v0.2 tetap hijau (regresi nihil) + 6 test Phase3Test baru:

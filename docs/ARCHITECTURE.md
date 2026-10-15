@@ -6,7 +6,7 @@ Modular monolith Laravel 11 (bukan microservices).
 | Layer | Lokasi |
 |---|---|
 | Models per domain | `app/Models/{Org,Identity,Master,Crm,Sales,Inventory,Purchasing,Finance,Hr,Pet,Mfg,Thrift,Studio,Rental,Marketing,Gov}/` |
-| Business rules/services | `app/Services/`: DocNumberService (sequence terkunci), StockService (ledger+locking), PostingService (balance/idempotent/reversal), ApprovalService (matrix+SoD), AuditService |
+| Business rules/services | `app/Services/`: DocNumberService (sequence terkunci), StockService (ledger+locking+batch QC/expiry guard), PostingService (balance/idempotent/reversal), ApprovalService (matrix+SoD), AuditService, PriceService (harga tier), PosService (shift/checkout POS), CommissionService (akrual komisi) |
 | Controllers | `app/Http/Controllers/{domain}/` + `CrudController` generik (scope entitas, audit, guard posted) |
 | Routes | `routes/modules/*.php` (org, master, sales, ops, finance_hr, business) + `routes/web.php` |
 | Views | `resources/views/modules/<domain>/` + `components/` generik (index/form/show/doc-lines) |
@@ -22,7 +22,7 @@ Alasan alternatif vs `app/Modules/...`: mengikuti konvensi Laravel (autoload `Ap
 - Error: RuntimeException bisnis → `back()->withErrors(['msg'])`, bukan 500.
 
 ## Events/jobs
-Antrian DB tersedia (`jobs` table) untuk notifikasi/export berat (pending: worker større). Scheduler: `routes/console.php` (kunci periode bulanan — pending).
+Job nyata: `App\Jobs\SendOverdueInvoiceAlert` — dispatch lewat command `kaza:overdue-alerts` (scheduler harian 08:00 di `routes/console.php`; idempoten 24 jam per notifikasi). Produksi: jalankan `php artisan queue:work` (supervisor); dev bisa `kaza:overdue-alerts --sync`. Notifikasi via `NotifyService` (bell + halaman).
 
 ## Authorization
 `perm:<nama>` di route + `hasPermission()` (super_admin bypass) + scope entity di `CrudController::baseQuery()` + `inScope()` untuk context switch. UI hanya menyembunyikan menu; keputusan selalu di server.

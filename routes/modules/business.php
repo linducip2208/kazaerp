@@ -7,12 +7,16 @@ Route::middleware(['auth','ctx'])->prefix('pet')->name('pet.')->group(function (
     Route::resource('grooming', \App\Http\Controllers\Pet\GroomingOrderController::class)->middleware('perm:pet.groom');
     Route::resource('boarding', \App\Http\Controllers\Pet\BoardingReservationController::class)->middleware('perm:pet.board');
     Route::post('boarding/book', [\App\Http\Controllers\Pet\BoardingCheckinController::class,'store'])->name('boarding.book')->middleware('perm:pet.board');
+    Route::get('transport/tracking', [\App\Http\Controllers\Pet\TransportTrackingController::class,'index'])->name('transport.tracking')->middleware('perm:pet.transport');
+    Route::get('transport/{id}/track', [\App\Http\Controllers\Pet\TransportTrackingController::class,'show'])->name('transport.track')->middleware('perm:pet.transport');
     Route::resource('transport', \App\Http\Controllers\Pet\TransportOrderController::class)->middleware('perm:pet.transport');
 });
 Route::middleware(['auth','ctx'])->prefix('mfg')->name('mfg.')->group(function () {
     Route::resource('designs', \App\Http\Controllers\Mfg\DesignController::class)->middleware('perm:mfg.view');
     Route::resource('boms', \App\Http\Controllers\Mfg\BomController::class)->middleware('perm:mfg.view');
     Route::resource('workorders', \App\Http\Controllers\Mfg\WorkOrderController::class)->middleware('perm:mfg.plan');
+    Route::post('workorders/{id}/issue', [\App\Http\Controllers\Mfg\WorkOrderController::class,'issue'])->name('workorders.issue')->middleware('perm:mfg.execute');
+    Route::post('workorders/{id}/produce', [\App\Http\Controllers\Mfg\WorkOrderController::class,'produce'])->name('workorders.produce')->middleware('perm:mfg.execute');
 });
 Route::middleware(['auth','ctx'])->prefix('thrift')->name('thrift.')->group(function () {
     Route::resource('lots', \App\Http\Controllers\Thrift\LotController::class)->middleware('perm:thrift.view');

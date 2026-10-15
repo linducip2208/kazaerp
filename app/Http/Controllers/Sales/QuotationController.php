@@ -19,10 +19,13 @@ class QuotationController extends CrudController {
         return view($this->viewPrefix.'.index',['rows'=>$rows,'meta'=>$this->meta()]);
     }
     public function create() {
+        $r = request();
         $ctx = session('erp_context',[]); $eid = $ctx['legal_entity_id'] ?? auth()->user()->legal_entity_id;
+        $customers = \App\Models\Master\Customer::where('legal_entity_id',$eid)->orderBy('name')->get();
+        $customer = $r->filled('customer_id') ? $customers->firstWhere('id',(int)$r->get('customer_id')) : $customers->first();
         return view($this->viewPrefix.'.form',['meta'=>$this->meta(),
-            'customers'=>\App\Models\Master\Customer::where('legal_entity_id',$eid)->orderBy('name')->get(),
-            'products'=>\App\Models\Master\Product::where('legal_entity_id',$eid)->where('is_sellable',true)->orderBy('name')->get()]);
+            'customers'=>$customers,'customer'=>$customer,
+            'products'=>\App\Services\PriceService::productOptions($eid, $customer?->tier)]);
     }
     public function store(Request $r) {
         $r->validate(['customer_id'=>'required|exists:customers,id','date'=>'required|date','lines'=>'required|array|min:1',

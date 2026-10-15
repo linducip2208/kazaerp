@@ -12,8 +12,13 @@
 <div class="col-md-7"><div class="card"><div class="card-header"><h3 class="card-title">Kasir — Shift #{{ $shift->id }}</h3></div>
 <div class="card-body">
 <form method="POST" action="{{ route('sales.pos.checkout') }}">@csrf
+<div class="mb-2"><label class="form-label">Pelanggan / member (harga mengikuti tier)</label>
+<select name="customer_id" id="pos-customer" class="form-select">
+<option value="" data-tier="retail">Umum (retail)</option>
+@foreach($customers as $c)<option value="{{ $c->id }}" data-tier="{{ $c->tier }}">{{ $c->name }} ({{ $c->tier }})</option>@endforeach
+</select></div>
 <div class="mb-2"><label class="form-label">Produk (klik untuk tambah)</label>
-<div class="row">@foreach($products as $p)<div class="col-6 mb-1"><button type="button" class="btn btn-outline-secondary w-100 addp" data-id="{{ $p->id }}" data-name="{{ $p->name }}" data-price="{{ $p->sell_price }}">{{ $p->name }} — {{ idr($p->sell_price) }}</button></div>@endforeach</div></div>
+<div class="row">@foreach($products as $p)<div class="col-6 mb-1"><button type="button" class="btn btn-outline-secondary w-100 addp" data-id="{{ $p['id'] }}" data-name="{{ $p['name'] }}" data-retail="{{ $p['retail'] }}" data-wholesale="{{ $p['wholesale'] }}" data-reseller="{{ $p['reseller'] }}">{{ $p['name'] }} — {{ idr($p['retail']) }}</button></div>@endforeach</div></div>
 <table class="table" id="cart"><thead><tr><th>Item</th><th>Qty</th><th>Harga</th><th></th></tr></thead><tbody></tbody></table>
 <div class="mb-2"><label class="form-label">Metode</label><select name="pay_method" class="form-select"><option value="cash">Tunai</option><option value="transfer">Transfer</option><option value="qris">QRIS</option></select></div>
 <button class="btn btn-primary">Bayar / Checkout</button></form>
@@ -25,13 +30,25 @@
 </div>
 <script>
 const cart = document.querySelector('#cart tbody'); let i = 0;
+function currentTier(){ const s = document.getElementById('pos-customer'); return s.selectedOptions[0]?.dataset.tier || 'retail'; }
+function fmt(n){ return new Intl.NumberFormat('id-ID',{style:'currency',currency:'IDR',maximumFractionDigits:0}).format(n); }
+function refreshPrices(){
+  const t = currentTier();
+  document.querySelectorAll('.addp').forEach(b=>{
+    const price = parseFloat(b.dataset[t] || b.dataset.retail || 0);
+    b.dataset.price = price;
+    b.textContent = `${b.dataset.name} — ${fmt(price)}`;
+  });
+}
+document.getElementById('pos-customer')?.addEventListener('change', refreshPrices);
 document.querySelectorAll('.addp').forEach(b=>b.addEventListener('click',()=>{
 const tr = document.createElement('tr');
 tr.innerHTML = `<td>${b.dataset.name}<input type="hidden" name="lines[${i}][product_id]" value="${b.dataset.id}"></td>
 <td><input type="number" name="lines[${i}][qty]" value="1" min="0.01" step="any" class="form-control"></td>
-<td>${b.dataset.price}</td><td><button type="button" class="btn btn-sm rm">×</button></td>`;
+<td>${fmt(parseFloat(b.dataset.price || 0))}</td><td><button type="button" class="btn btn-sm rm">×</button></td>`;
 tr.querySelector('.rm').onclick = ()=>tr.remove(); cart.appendChild(tr); i++;
 }));
+refreshPrices();
 </script>
 @endif
 @endsection

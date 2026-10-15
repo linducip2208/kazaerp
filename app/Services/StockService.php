@@ -2,13 +2,31 @@
 namespace App\Services;
 use Illuminate\Support\Facades\DB;
 class StockService {
+    /**
+     * Guard batch keluar gudang:
+     * - qc_status pending/quarantine/rejected → dilarang keluar
+     * - batch kedaluwarsa → dilarang keluar
+     * Set $p['ignore_qc'] = true hanya untuk koreksi terotorisasi (mis. adjustment).
+     */
+    public static function assertBatchOutAllowed($batchId, bool $ignore = false): void {
+        if (!$batchId || $ignore) return;
+        $b = DB::table('batches')->where('id', $batchId)->first();
+        if (!$b) throw new \RuntimeException('Batch tidak ditemukan.');
+        if (in_array($b->qc_status, ['pending', 'quarantine', 'rejected'], true)) {
+            throw new \RuntimeException('Batch ' . $b->lot_no . ' berstatus ' . $b->qc_status . ' — tidak boleh keluar gudang sebelum QC release.');
+        }
+        if ($b->expired_at && $b->expired_at < now()->toDateString()) {
+            throw new \RuntimeException('Batch ' . $b->lot_no . ' sudah kedaluwarsa (' . $b->expired_at . ').');
+        }
+    }
     public static function move(array $p): void {
-        // $p: warehouse_id, product_id, variant_id?, batch_id?, qty (+masuk/-keluar), ref_type, ref_id, unit_cost?, note?
+        // $p: warehouse_id, product_id, variant_id?, batch_id?, qty (+masuk/-keluar), ref_type, ref_id, unit_cost?, note?, ignore_qc?
         DB::transaction(function () use ($p) {
             $wh = (int) $p['warehouse_id']; $prod = (int) $p['product_id'];
             $var = $p['variant_id'] ?? null; $batch = $p['batch_id'] ?? null;
             $qty = (float) $p['qty'];
             if ($qty < 0) { // locking untuk pengeluaran agar cegah oversell
+                self::assertBatchOutAllowed($batch, (bool) ($p['ignore_qc'] ?? false));
                 $bal = DB::table('stock_balances')->where([
                     'warehouse_id' => $wh, 'product_id' => $prod,
                     'variant_id' => $var, 'batch_id' => $batch,

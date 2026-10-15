@@ -20,10 +20,11 @@ class ReceiptController extends Controller {
     }
     public function store(Request $r) {
         $r->validate(['warehouse_id'=>'required|exists:warehouses,id','date'=>'required|date','purchase_order_id'=>'nullable|exists:purchase_orders,id',
-            'lines'=>'required|array|min:1','lines.*.product_id'=>'required|exists:products,id','lines.*.qty'=>'required|numeric|min:0.0001']);
+            'lines'=>'required|array|min:1','lines.*.product_id'=>'required|exists:products,id','lines.*.qty'=>'required|numeric|min:0.0001',
+            'lines.*.lot'=>'nullable|string|max:60','lines.*.expired'=>'nullable|date','lines.*.qc'=>'nullable|in:released,pending,quarantine,rejected']);
         $u = auth()->user(); $ctx = session('erp_context',[]); $eid = $ctx['legal_entity_id'] ?? $u->legal_entity_id;
         try {
-        DB::transaction(function() use ($r,$eid,$u) {
+        DB::transaction(function() use ($r,$eid,$u,$ctx) {
             $number = DocNumberService::next('GRN',$eid,$r->warehouse_id ? null : null);
             $grn = DB::table('goods_receipts')->insertGetId(['legal_entity_id'=>$eid,'branch_id'=>$ctx['branch_id'] ?? $u->branch_id,
                 'warehouse_id'=>$r->warehouse_id,'number'=>$number,'date'=>$r->date,'ref_type'=>$r->purchase_order_id?'purchase_order':null,
@@ -34,9 +35,20 @@ class ReceiptController extends Controller {
                 foreach (DB::table('purchase_order_lines')->where('purchase_order_id',$po->id)->get() as $pl) $poLines[$pl->product_id]=$pl;
             }
             foreach ($r->lines as $l) {
-                DB::table('goods_receipt_lines')->insert(['goods_receipt_id'=>$grn,'product_id'=>$l['product_id'],
+                // buat/pakai batch bila No. Lot diisi → mendukung karantina & kedaluwarsa
+                $batchId = null;
+                if (!empty($l['lot'])) {
+                    $batchId = DB::table('batches')->where(['product_id'=>$l['product_id'],'lot_no'=>$l['lot']])->value('id');
+                    if (!$batchId) {
+                        $batchId = DB::table('batches')->insertGetId(['product_id'=>$l['product_id'],'lot_no'=>$l['lot'],
+                            'expired_at'=>$l['expired'] ?? null,'qc_status'=>$l['qc'] ?? 'released','created_at'=>now(),'updated_at'=>now()]);
+                    } elseif (!empty($l['expired'])) {
+                        DB::table('batches')->where('id',$batchId)->update(['expired_at'=>$l['expired'],'updated_at'=>now()]);
+                    }
+                }
+                DB::table('goods_receipt_lines')->insert(['goods_receipt_id'=>$grn,'product_id'=>$l['product_id'],'batch_id'=>$batchId,
                     'qty_ordered'=>$poLines[$l['product_id']]->qty ?? $l['qty'],'qty_received'=>$l['qty'],'unit_cost'=>$l['cost'] ?? 0,'created_at'=>now(),'updated_at'=>now()]);
-                StockService::move(['warehouse_id'=>$r->warehouse_id,'product_id'=>$l['product_id'],'qty'=>(float)$l['qty'],'ref_type'=>'goods_receipt','ref_id'=>$grn,'unit_cost'=>$l['cost'] ?? 0]);
+                StockService::move(['warehouse_id'=>$r->warehouse_id,'product_id'=>$l['product_id'],'qty'=>(float)$l['qty'],'ref_type'=>'goods_receipt','ref_id'=>$grn,'unit_cost'=>$l['cost'] ?? 0,'batch_id'=>$batchId]);
                 if (isset($poLines[$l['product_id']])) {
                     DB::table('purchase_order_lines')->where(['purchase_order_id'=>$r->purchase_order_id,'product_id'=>$l['product_id']])
                         ->update(['qty_received'=>DB::raw('qty_received + '.(float)$l['qty'])]);

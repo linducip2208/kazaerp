@@ -61,10 +61,73 @@ class ResourceController extends Controller
         }
         $eid = $this->eid($r);
         $this->guardEntity($r, $eid);
+        $tier = null;
+        if ($r->filled('customer_id')) {
+            $cust = DB::table('customers')->where('id', (int) $r->customer_id)->where('legal_entity_id', $eid)->first();
+            if (! $cust) {
+                abort(404, 'Pelanggan tidak ditemukan pada entitas ini.');
+            }
+            $tier = $cust->tier;
+        }
         $rows = DB::table('products')->where('legal_entity_id', $eid)->where('is_active', true)
             ->when($r->q, fn ($q) => $q->where(fn ($w) => $w->where('sku', 'like', "%{$r->q}%")->orWhere('name', 'like', "%{$r->q}%")))
-            ->select('id', 'sku', 'barcode', 'name', 'sell_price')->orderBy('name')->limit(100)->get();
+            ->select('id', 'sku', 'barcode', 'name', 'sell_price', 'wholesale_price', 'reseller_price')
+            ->orderBy('name')->limit(100)->get()
+            ->map(function ($p) use ($tier) {
+                $p->tier = \App\Services\PriceService::effectiveTier($tier);
+                $p->price = \App\Services\PriceService::forProduct(
+                    new \App\Models\Master\Product(['sell_price' => $p->sell_price, 'wholesale_price' => $p->wholesale_price, 'reseller_price' => $p->reseller_price]),
+                    $tier
+                );
+
+                return $p;
+            });
 
         return response()->json(['data' => $rows]);
+    }
+
+    public function customers(Request $r)
+    {
+        if (! $r->user()->hasPermission('crm.view')) {
+            abort(403);
+        }
+        $eid = $this->eid($r);
+        $this->guardEntity($r, $eid);
+        $rows = DB::table('customers')->where('legal_entity_id', $eid)->where('is_active', true)
+            ->when($r->q, fn ($q) => $q->where(fn ($w) => $w->where('code', 'like', "%{$r->q}%")->orWhere('name', 'like', "%{$r->q}%")))
+            ->select('id', 'code', 'name', 'tier', 'phone')
+            ->orderBy('name')->limit(100)->get();
+
+        return response()->json(['data' => $rows]);
+    }
+
+    /** Resolusi harga satu produk untuk tier pelanggan (default retail). */
+    public function productPrice(Request $r, int $id)
+    {
+        if (! $r->user()->hasPermission('crm.view')) {
+            abort(403);
+        }
+        $eid = $this->eid($r);
+        $this->guardEntity($r, $eid);
+        $p = DB::table('products')->where('id', $id)->where('legal_entity_id', $eid)->first();
+        if (! $p) {
+            abort(404);
+        }
+        $tier = null;
+        if ($r->filled('customer_id')) {
+            $tier = DB::table('customers')->where('id', (int) $r->customer_id)->where('legal_entity_id', $eid)->value('tier');
+        }
+
+        return response()->json([
+            'data' => [
+                'product_id' => $p->id,
+                'sku' => $p->sku,
+                'price' => \App\Services\PriceService::forProduct(
+                    new \App\Models\Master\Product(['sell_price' => $p->sell_price, 'wholesale_price' => $p->wholesale_price, 'reseller_price' => $p->reseller_price]),
+                    $tier
+                ),
+                'tier' => \App\Services\PriceService::effectiveTier($tier),
+            ],
+        ]);
     }
 }

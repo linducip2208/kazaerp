@@ -7,6 +7,8 @@ Route::middleware(['auth','ctx'])->prefix('inventory')->name('inventory.')->grou
     Route::get('receipts', [\App\Http\Controllers\Inventory\ReceiptController::class,'index'])->name('receipts.index')->middleware('perm:inventory.view');
     Route::get('receipts/create', [\App\Http\Controllers\Inventory\ReceiptController::class,'create'])->name('receipts.create')->middleware('perm:inventory.receive');
     Route::post('receipts', [\App\Http\Controllers\Inventory\ReceiptController::class,'store'])->name('receipts.store')->middleware('perm:inventory.receive');
+    Route::get('batches', [\App\Http\Controllers\Inventory\BatchController::class,'index'])->name('batches.index')->middleware('perm:inventory.view');
+    Route::post('batches/{id}/qc', [\App\Http\Controllers\Inventory\BatchController::class,'qc'])->name('batches.qc')->middleware('perm:inventory.adjust');
 });
 Route::middleware(['auth','ctx'])->prefix('purchasing')->name('purchasing.')->group(function () {
     Route::get('requisitions', [\App\Http\Controllers\Purchasing\RequisitionController::class,'index'])->name('requisitions.index')->middleware('perm:purchasing.view');

@@ -23,27 +23,34 @@ class InvoiceController extends CrudController {
         $r = request();
         $ctx = session('erp_context',[]); $eid = $ctx['legal_entity_id'] ?? auth()->user()->legal_entity_id;
         $fromSO = $r->get('from_so') ? \App\Models\Sales\SalesOrder::where('id',$r->get('from_so'))->first() : null;
+        $customers = \App\Models\Master\Customer::where('legal_entity_id',$eid)->orderBy('name')->get();
+        $customer = $r->filled('customer_id') ? $customers->firstWhere('id',(int)$r->get('customer_id')) : $customers->first();
         return view($this->viewPrefix.'.form',['meta'=>$this->meta(),'fromSO'=>$fromSO,
-            'customers'=>\App\Models\Master\Customer::where('legal_entity_id',$eid)->orderBy('name')->get(),
-            'products'=>\App\Models\Master\Product::where('legal_entity_id',$eid)->where('is_sellable',true)->orderBy('name')->get()]);
+            'customers'=>$customers,'customer'=>$customer,
+            'products'=>\App\Services\PriceService::productOptions($eid, $customer?->tier)]);
     }
     public function store(Request $r) {
         $r->validate(['customer_id'=>'required|exists:customers,id','date'=>'required|date','due_date'=>'nullable|date',
             'lines'=>'required|array|min:1','lines.*.product_id'=>'required|exists:products,id',
-            'lines.*.qty'=>'required|numeric|min:0.0001','lines.*.price'=>'required|numeric|min:0']);
+            'lines.*.qty'=>'required|numeric|min:0.0001','lines.*.price'=>'nullable|numeric|min:0']);
         $u = auth()->user(); $ctx = session('erp_context',[]);
         $eid = $ctx['legal_entity_id'] ?? $u->legal_entity_id; $bid = $ctx['branch_id'] ?? $u->branch_id;
+        $cust = \App\Models\Master\Customer::findOrFail($r->customer_id);
+        if ((int)$cust->legal_entity_id !== (int)$eid) abort(403,'Pelanggan beda entitas.');
         try {
-        $id = DB::transaction(function() use ($r,$eid,$bid,$u) {
+        $id = DB::transaction(function() use ($r,$eid,$bid,$u,$cust) {
             $ent = \App\Models\Org\LegalEntity::find($eid); $br = \App\Models\Org\Branch::find($bid);
             $number = DocNumberService::next('INV',$eid,$bid,$ent?->code,$br?->code);
             $sub=0; $lines=[];
             foreach ($r->lines as $l) {
                 $p = \App\Models\Master\Product::findOrFail($l['product_id']);
                 if ((int)$p->legal_entity_id !== (int)$eid) throw new \RuntimeException('Produk beda entitas.');
-                // blokir produk kedaluwarsa/karantina sesuai konfigurasi
-                $lt=(float)$l['qty']*(float)$l['price']; $sub+=$lt;
-                $lines[]=['product_id'=>$p->id,'snapshot_name'=>$p->name,'qty'=>$l['qty'],'price'=>$l['price'],'discount'=>0,'tax_rate'=>11,'line_total'=>$lt*1.11,'created_at'=>now(),'updated_at'=>now()];
+                // harga kosong → default harga tier pelanggan
+                $inPrice = $l['price'] ?? null;
+                $price = ($inPrice === null || $inPrice === '') ? \App\Services\PriceService::forCustomer($p,$cust) : (float)$inPrice;
+                if ($price < 0) throw new \RuntimeException('Harga tidak valid.');
+                $lt=(float)$l['qty']*$price; $sub+=$lt;
+                $lines[]=['product_id'=>$p->id,'snapshot_name'=>$p->name,'qty'=>$l['qty'],'price'=>$price,'discount'=>0,'tax_rate'=>11,'line_total'=>$lt*1.11,'created_at'=>now(),'updated_at'=>now()];
             }
             $tax=$sub*0.11; $grand=$sub+$tax;
             $disc = 0; $voucherId = null;
@@ -96,7 +103,10 @@ class InvoiceController extends CrudController {
                 'method'=>$r->method,'amount'=>$r->amount,'created_by'=>$u->id,'created_at'=>now(),'updated_at'=>now()]);
             $paid = (float)$inv2->paid_total + (float)$r->amount;
             $inv2->update(['paid_total'=>$paid,'pay_status'=> $paid >= (float)$inv2->grand_total - 0.005 ? 'paid' : 'partial']);
-            if ($inv2->fresh()->pay_status === 'paid') \App\Services\VoucherService::accrueOnPaid($inv2->id);
+            if ($inv2->fresh()->pay_status === 'paid') {
+                \App\Services\VoucherService::accrueOnPaid($inv2->id);
+                \App\Services\CommissionService::accrue($inv2->id);
+            }
             // jurnal kas vs piutang
             $coa = fn($code)=>DB::table('coas')->where(['legal_entity_id'=>$inv2->legal_entity_id,'code'=>$code])->value('id');
             if ($coa('1000') && $coa('1200')) {

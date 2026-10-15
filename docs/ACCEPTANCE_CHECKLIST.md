@@ -13,6 +13,12 @@
 - [x] Payroll hitung→setuju→slip
 - [x] Boarding/rental/thrift guards (test)
 - [x] Approval + SoD (test)
+- [x] Harga tier otomatis (SO/invoice/quote/POS/API) (test)
+- [x] QC/karantina batch + guard stok keluar (test)
+- [x] MFG issue→produce + variance biaya (test)
+- [x] Komisi akrual saat lunas + approve Finance (test)
+- [x] API POS (shift/checkout) + GPS positions (test)
+- [x] Notifikasi jatuh tempo via queue + scheduler (test)
 - [ ] UAT tanda tangan owner & Finance (PENDING)
 
 ## Keamanan/Data/Deploy/Go-live

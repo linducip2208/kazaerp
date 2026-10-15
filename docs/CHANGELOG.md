@@ -1,5 +1,15 @@
 # Changelog
 
+## v0.4.0 — 2026-10-15
+- Harga tier otomatis per pelanggan (retail/wholesale/reseller) di SO/invoice/quotation/POS + API (`PriceService`).
+- QC/karantina batch: lot GRN → batch otomatis, halaman Batch & QC; stok keluar diblokir untuk batch pending/quarantine/rejected/kedaluwarsa.
+- MFG: WO snapshot biaya standar → issue (biaya aktual) → produce (cap qty) → variance biaya + FG receipt.
+- Komisi penjualan: akrual saat invoice lunas (rate `company_configs`), halaman Finance + approve/cancel (idempoten per invoice).
+- API v1 baru: products (+harga tier), customers, POS (shift open/close/checkout), GPS positions — semua dengan guard entitas.
+- Tracking GPS transport (web) + tabel `transport_positions`.
+- Queue worker nyata: job `SendOverdueInvoiceAlert` + command `kaza:overdue-alerts` (scheduler 08:00, idempoten 24 jam).
+- Test Phase4Test (6 test / 85 assertions) — hijau; suite penuh **32 passed / 204 assertions / 0 failed** (lihat TEST_RESULTS.md).
+
 ## v0.3.0 — 2026-10-15
 - 2FA TOTP (setup QR SVG lokal, challenge login, disable berpassword).
 - File privat (`storage/app/private`) + download terotorisasi per tipe pemilik + audit download.
