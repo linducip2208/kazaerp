@@ -33,7 +33,10 @@ Route::middleware(['auth','ctx'])->prefix('marketing')->name('marketing.')->grou
 });
 Route::middleware(['auth','ctx'])->prefix('gov')->name('gov.')->group(function () {
     Route::get('approvals', [\App\Http\Controllers\Gov\ApprovalController::class,'index'])->name('approvals.index')->middleware('perm:governance.view');
-    Route::post('approvals/{id}', [\App\Http\Controllers\Gov\ApprovalController::class,'decide'])->name('approvals.decide')->middleware('perm:governance.approve');
+    Route::post('approvals/{id}', [\App\Http\Controllers\Gov\ApprovalController::class,'decide'])->name('approvals.decide');
+    Route::get('delegations', [\App\Http\Controllers\Gov\DelegationController::class,'index'])->name('delegations.index')->middleware('perm:governance.view');
+    Route::post('delegations', [\App\Http\Controllers\Gov\DelegationController::class,'store'])->name('delegations.store');
+    Route::post('delegations/{id}/toggle', [\App\Http\Controllers\Gov\DelegationController::class,'toggle'])->name('delegations.toggle');
 });
 Route::middleware(['auth','ctx'])->prefix('reports')->name('reports.')->group(function () {
     Route::get('sales', [\App\Http\Controllers\ReportController::class,'sales'])->name('sales')->middleware('perm:reports.view');

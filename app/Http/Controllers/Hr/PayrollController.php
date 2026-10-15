@@ -5,6 +5,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Services\DocNumberService;
 use App\Services\ApprovalService;
+use App\Services\PostingService;
 class PayrollController extends Controller {
     public function index() {
         $rows = DB::table('payrolls')->orderByDesc('id')->paginate(15);
@@ -51,10 +52,23 @@ class PayrollController extends Controller {
             $ap = DB::table('approvals')->where(['doc_type'=>'payroll','doc_id'=>$id,'status'=>'pending'])->orderByDesc('id')->first();
             if ($ap) ApprovalService::decide($ap->id,'approved','OK');
             DB::table('payrolls')->where('id',$id)->update(['status'=>'approved','approved_by'=>auth()->id()]);
+            // Mapping jurnal: Dr Beban Gaji (6100) / Cr Utang Gaji (2300), idempotent via payroll_journals
+            if (!DB::table('payroll_journals')->where('payroll_id',$id)->exists()) {
+                $coa = fn($code)=>DB::table('coas')->where(['legal_entity_id'=>$row->legal_entity_id,'code'=>$code])->value('id');
+                if ($coa('6100') && $coa('2300')) {
+                    $ent = \App\Models\Org\LegalEntity::find($row->legal_entity_id);
+                    $jid = PostingService::postJournal(['legal_entity_id'=>$row->legal_entity_id,'branch_id'=>null,
+                        'date'=>now()->toDateString(),'number'=>DocNumberService::next('J',$row->legal_entity_id,null,$ent?->code),
+                        'description'=>'Gaji '.$row->number,'source_type'=>'payroll','source_id'=>$id],
+                        [['coa_id'=>$coa('6100'),'debit'=>(float)$row->grand_total,'credit'=>0],
+                         ['coa_id'=>$coa('2300'),'debit'=>0,'credit'=>(float)$row->grand_total]],'payroll-'.$id);
+                    DB::table('payroll_journals')->insert(['payroll_id'=>$id,'journal_id'=>$jid,'created_at'=>now(),'updated_at'=>now()]);
+                }
+            }
         } catch (\Throwable $e) {
             return back()->withErrors(['msg' => $e->getMessage()]);
         }
-        return back()->with('ok','Payroll disetujui (terkunci dari perubahan diam-diam).');
+        return back()->with('ok','Payroll disetujui + jurnal gaji terposting (terkunci dari perubahan diam-diam).');
     }
     public function payslip($id) {
         $slip = DB::table('payslips')->join('employees','employees.id','=','payslips.employee_id')

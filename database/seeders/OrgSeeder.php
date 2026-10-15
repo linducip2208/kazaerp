@@ -29,7 +29,7 @@ class OrgSeeder extends Seeder {
             $coas = [
                 ['1000','Kas','asset','debit'],['1100','Bank','asset','debit'],['1200','Piutang Usaha','asset','debit'],
                 ['1300','Persediaan','asset','debit'],['2000','Utang Usaha','liability','credit'],['2100','Utang Pajak','liability','credit'],
-                ['2200','Deposit Pelanggan','liability','credit'],['3000','Modal','equity','credit'],['4000','Pendapatan','revenue','credit'],
+                ['2200','Deposit Pelanggan','liability','credit'],['2300','Utang Gaji','liability','credit'],['3000','Modal','equity','credit'],['4000','Pendapatan','revenue','credit'],
                 ['5000','HPP','expense','debit'],['6000','Beban Operasional','expense','debit'],['6100','Beban Gaji','expense','debit'],
             ];
             foreach ($coas as $c) {

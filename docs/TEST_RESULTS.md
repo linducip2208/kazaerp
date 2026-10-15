@@ -1,8 +1,14 @@
 # Test Results (dari run nyata — bukan klaim)
 
-## Suite utama — 2026-10-15 (MySQL `kazaerp_testing`)
+## Suite penuh v0.2.0 — 2026-10-15 (MySQL `kazaerp_testing`)
 - Perintah: `php artisan test`
-- Hasil: **16 passed, 0 failed, 0 skipped — 57 assertions — durasi 534.95s**
+- Hasil: **20 passed, 0 failed, 0 skipped — 82 assertions — durasi 747.74s**
+- 16 test v0.1.0 tetap hijau (regresi nihil) + 4 test Phase2Test baru:
+  - bayar utang partial/paid + overpay ditolak + jurnal balance
+  - payroll approve → jurnal gaji Rp4.500.000 balance (6100→2300)
+  - delegasi memungkinkan decide tanpa permission langsung
+  - API login/scope-403/revoke-401/nonaktif-401
+- DB pengujian: MySQL (locking & constraints nyata). Log: `storage/logs/finaltest2.log`.
 - Rincian file:
   - `tests/Unit/DocNumberTest.php` — 1 passed (sequence monotonik + format)
   - `tests/Feature/AuthTest.php` — 2 passed (login OK/gagal/nonaktif, guest redirect)

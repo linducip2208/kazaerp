@@ -50,7 +50,7 @@ class PurchaseReturnController extends Controller
                     $total += (float) $l['qty'] * (float) ($l['price'] ?? 0);
                 }
                 $id = DB::table('purchase_returns')->insertGetId([
-                    'legal_entity_id' => $eid, 'purchase_order_id' => $r->purchase_order_id,
+                    'legal_entity_id' => $eid, 'branch_id' => $ctx['branch_id'] ?? $u->branch_id, 'purchase_order_id' => $r->purchase_order_id,
                     'supplier_id' => $r->supplier_id, 'number' => $number, 'date' => $r->date,
                     'status' => 'posted', 'grand_total' => $total, 'created_at' => now(), 'updated_at' => now(),
                 ]);

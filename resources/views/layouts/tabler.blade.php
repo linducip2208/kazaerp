@@ -18,8 +18,19 @@
 <form method="GET" action="{{ route('reports.sales') }}" class="me-2 d-none d-md-block">
 <input type="search" name="q" class="form-control" placeholder="Cari invoice…" value="{{ request('q') }}">
 </form>
-@php $pend = DB::table('approvals')->where('status','pending')->count(); @endphp
-<a href="{{ route('gov.approvals.index') }}" class="nav-link" title="Persetujuan">🔔 @if($pend)<span class="badge bg-red">{{ $pend }}</span>@endif</a>
+@php $pend = DB::table('approvals')->where('status','pending')->count();
+$notif = DB::table('notifications')->where('user_id', auth()->id())->whereNull('read_at')->orderByDesc('id')->limit(5)->get();
+$notifCount = DB::table('notifications')->where('user_id', auth()->id())->whereNull('read_at')->count(); @endphp
+<div class="nav-item dropdown">
+<a href="#" class="nav-link" data-bs-toggle="dropdown" title="Notifikasi">🔔 @if($notifCount)<span class="badge bg-red">{{ $notifCount }}</span>@endif</a>
+<div class="dropdown-menu dropdown-menu-end" style="min-width:280px">
+@foreach($notif as $n)<a class="dropdown-item" href="{{ route('notifications.read',$n->id) }}">{{ Str::limit($n->title,45) }}</a>@endforeach
+@if(!$notif->count())<span class="dropdown-item-text text-muted">Tidak ada notifikasi baru.</span>@endif
+<div class="dropdown-divider"></div>
+<a class="dropdown-item text-center" href="{{ route('notifications.index') }}">Semua notifikasi</a>
+</div>
+</div>
+<a href="{{ route('gov.approvals.index') }}" class="nav-link" title="Persetujuan">✅ @if($pend)<span class="badge bg-yellow">{{ $pend }}</span>@endif</a>
 <div class="nav-item dropdown">
 <a href="#" class="nav-link d-flex" data-bs-toggle="dropdown">{{ auth()->user()->name }} ▾</a>
 <div class="dropdown-menu dropdown-menu-end">
@@ -87,7 +98,7 @@
 <div class="dropdown-menu">
 <a class="dropdown-item" href="{{ route('purchasing.requisitions.index') }}">Permintaan</a>
 <a class="dropdown-item" href="{{ route('purchasing.orders.index') }}">Purchase Order</a>
-<a class="dropdown-item" href="{{ route('purchasing.vinvoices.index') }}">Invoice Vendor</a>
+<a class="dropdown-item" href="{{ route('purchasing.vinvoices.index') }}">Invoice & Bayar Vendor</a>
 </div></li>
 @endif
 @if($u->hasPermission('finance.view'))
@@ -150,7 +161,11 @@
 </div></li>
 @endif
 @if($u->hasPermission('governance.view'))
-<li class="nav-item"><a class="nav-link" href="{{ route('gov.approvals.index') }}">✅ Approval</a></li>
+<li class="nav-item dropdown"><a class="nav-link dropdown-toggle" data-bs-toggle="dropdown" href="#">✅ Governance</a>
+<div class="dropdown-menu">
+<a class="dropdown-item" href="{{ route('gov.approvals.index') }}">Approval</a>
+<a class="dropdown-item" href="{{ route('gov.delegations.index') }}">Delegasi</a>
+</div></li>
 @endif
 </ul>
 <div class="my-2 my-md-0 flex-grow-1 flex-md-grow-0 order-first order-md-last">

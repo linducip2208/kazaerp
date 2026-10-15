@@ -17,4 +17,10 @@ Route::middleware(['auth','ctx'])->prefix('purchasing')->name('purchasing.')->gr
     Route::get('vinvoices', [\App\Http\Controllers\Purchasing\VendorInvoiceController::class,'index'])->name('vinvoices.index')->middleware('perm:purchasing.view');
     Route::get('vinvoices/create', [\App\Http\Controllers\Purchasing\VendorInvoiceController::class,'create'])->name('vinvoices.create')->middleware('perm:purchasing.create');
     Route::post('vinvoices', [\App\Http\Controllers\Purchasing\VendorInvoiceController::class,'store'])->name('vinvoices.store')->middleware('perm:purchasing.create');
+    Route::get('appayments', [\App\Http\Controllers\Purchasing\ApPaymentController::class,'index'])->name('appayments.index')->middleware('perm:purchasing.view');
+    Route::get('appayments/create', [\App\Http\Controllers\Purchasing\ApPaymentController::class,'create'])->name('appayments.create')->middleware('perm:purchasing.create');
+    Route::post('appayments', [\App\Http\Controllers\Purchasing\ApPaymentController::class,'store'])->name('appayments.store')->middleware('perm:purchasing.create');
+    Route::get('returns', [\App\Http\Controllers\Purchasing\PurchaseReturnController::class,'index'])->name('returns.index')->middleware('perm:purchasing.view');
+    Route::get('returns/create', [\App\Http\Controllers\Purchasing\PurchaseReturnController::class,'create'])->name('returns.create')->middleware('perm:purchasing.return');
+    Route::post('returns', [\App\Http\Controllers\Purchasing\PurchaseReturnController::class,'store'])->name('returns.store')->middleware('perm:purchasing.return');
 });

@@ -16,6 +16,7 @@
     },
     "dependencies": {
         "@tabler/core": "^1.6.1",
-        "bootstrap": "^5.3.8"
+        "bootstrap": "^5.3.8",
+        "chart.js": "^4.5.1"
     }
 }

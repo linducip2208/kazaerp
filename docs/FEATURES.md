@@ -35,4 +35,13 @@
 | F-REP-01 | Laporan + CSV + import validasi | P1 | DONE | Report/ImportController |
 | F-UI-01 | Tabler lokal, sidebar per-permission, toast, empty state | P0 | DONE | build 835KB CSS lokal, smoke 22/22 |
 | F-PWA-01 | Manifest + SW aset-only | P2 | DONE | public/manifest, sw.js |
+| F-PUR-03 | Bayar utang vendor + jurnal | P1 | DONE | ApPaymentController, Phase2Test |
+| F-PUR-04 | Retur beli kurangi stok | P1 | DONE | PurchaseReturnController |
+| F-HR-03 | Jurnal gaji otomatis (6100→2300) | P1 | DONE | PayrollController, Phase2Test |
+| F-GOV-02 | Delegasi approval bertanggal | P2 | DONE | DelegationController, Phase2Test |
+| F-GOV-03 | Notifikasi DB + bell | P2 | DONE | NotifyService, NotificationController |
+| F-DASH-01 | Dashboard per-peran + tren 6 bln | P1 | DONE | DashboardController, Chart.js lokal |
+| F-API-01 | API v1 token + guard entitas | P2 | DONE | routes/api.php, Phase2Test |
+| F-OPS-01 | Backup command + scheduler + AdminSeeder | P2 | DONE | kaza:backup, console.php, AdminSeeder |
+| F-SEC-01 | Security headers + cabut sesi nonaktif | P1 | DONE | SecurityHeaders, CheckActiveUser |
 | F-DELTA-01 | Grafik tren dashboard, eliminasi intercompany otomatis, worker/queue, approval delegasi UI | P3 | PENDING | ROADMAP |

@@ -14,5 +14,8 @@ Route::middleware(['auth','ctx'])->group(function () {
     Route::get('/profile', [\App\Http\Controllers\AuthController::class,'profile'])->name('profile');
     Route::put('/profile', [\App\Http\Controllers\AuthController::class,'updateProfile'])->name('profile.update');
     Route::post('/context', [\App\Http\Controllers\AuthController::class,'switchContext'])->name('context.switch');
+    Route::get('/notifications', [\App\Http\Controllers\NotificationController::class,'index'])->name('notifications.index');
+    Route::get('/notifications/{id}', [\App\Http\Controllers\NotificationController::class,'read'])->name('notifications.read');
+    Route::post('/notifications/read-all', [\App\Http\Controllers\NotificationController::class,'readAll'])->name('notifications.readAll');
 });
 foreach (glob(__DIR__.'/modules/*.php') as $f) require $f;

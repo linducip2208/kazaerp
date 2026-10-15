@@ -14,6 +14,8 @@ return Application::configure(basePath: dirname(__DIR__))
             'perm' => \App\Http\Middleware\CheckPermission::class,
             'ctx' => \App\Http\Middleware\ActiveContext::class,
         ]);
+        $middleware->append(\App\Http\Middleware\SecurityHeaders::class);
+        $middleware->appendToGroup('web', \App\Http\Middleware\CheckActiveUser::class);
     })
     ->withExceptions(function (Exceptions $exceptions) {
         //

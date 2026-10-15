@@ -25,7 +25,7 @@ class VendorInvoiceController extends Controller {
             return back()->withErrors(['msg'=>'Duplikat: vendor_ref sudah pernah ditagihkan supplier ini.'])->withInput();
         }
         try {
-        $id = DB::transaction(function() use ($r,$po,$eid,$u) {
+        $id = DB::transaction(function() use ($r,$po,$eid,$u,$ctx) {
             $lines = DB::table('purchase_order_lines')->where('purchase_order_id',$po->id)->get();
             $grand = 0; foreach ($lines as $l) $grand += (float)$l->qty*(float)$l->price;
             $grand *= 1.11;
@@ -38,7 +38,7 @@ class VendorInvoiceController extends Controller {
                 if ($q < (float)$l->qty - 0.0001) { $match = 'exception'; break; }
             }
             $number = 'VIN-'.date('Ym').'-'.str_pad((string)(DB::table('vendor_invoices')->count()+1),5,'0',STR_PAD_LEFT);
-            $vid = DB::table('vendor_invoices')->insertGetId(['legal_entity_id'=>$eid,'purchase_order_id'=>$po->id,'supplier_id'=>$po->supplier_id,
+            $vid = DB::table('vendor_invoices')->insertGetId(['legal_entity_id'=>$eid,'branch_id'=>$ctx['branch_id'] ?? $u->branch_id,'purchase_order_id'=>$po->id,'supplier_id'=>$po->supplier_id,
                 'number'=>$number,'vendor_ref'=>$r->vendor_ref,'date'=>$r->date,'due_date'=>$r->due_date,'grand_total'=>$grand,'paid_total'=>0,
                 'status'=> $match==='exception' ? 'hold' : 'draft','match_status'=>$match,'created_at'=>now(),'updated_at'=>now()]);
             foreach ($lines as $l) DB::table('vendor_invoice_lines')->insert(['vendor_invoice_id'=>$vid,'product_id'=>$l->product_id,'qty'=>$l->qty,'price'=>$l->price,'line_total'=>(float)$l->qty*(float)$l->price,'created_at'=>now(),'updated_at'=>now()]);

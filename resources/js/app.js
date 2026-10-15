@@ -1,6 +1,9 @@
 import './bootstrap';
 import 'bootstrap/dist/js/bootstrap.bundle.min.js';
 import '@tabler/core/dist/js/tabler.min.js';
+import Chart from 'chart.js/auto';
+
+window.KazaChart = Chart;
 
 document.addEventListener('DOMContentLoaded', () => {
   document.querySelectorAll('[data-confirm]').forEach((el) => {
