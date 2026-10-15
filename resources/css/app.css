@@ -1,3 +1,13 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "@tabler/core/dist/css/tabler.min.css";
+@import "bootstrap/dist/css/bootstrap.min.css";
+
+/* KazaERP theme: terang, modern, bersih */
+:root { --kaza-primary: #206bc4; }
+body { font-feature-settings: "cv03","cv04","cv11"; }
+.navbar-brand { font-weight: 700; }
+.page-title { font-size: 1.25rem; font-weight: 600; }
+.badge-status-draft { background: #6c757d; }
+.table thead th { white-space: nowrap; }
+.empty-state { padding: 3rem 1rem; text-align: center; color: #6c757d; }
+@media (max-width: 768px) { .sidebar { position: fixed; z-index: 1040; } }
+@media print { .no-print { display: none !important; } .card { border: none !important; box-shadow: none !important; } }
