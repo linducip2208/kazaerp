@@ -11,6 +11,12 @@ Route::middleware(['auth','ctx'])->prefix('finance')->name('finance.')->group(fu
     Route::get('trial', [\App\Http\Controllers\Finance\FinanceReportController::class,'trialBalance'])->name('trial')->middleware('perm:finance.view');
     Route::get('pl', [\App\Http\Controllers\Finance\FinanceReportController::class,'pl'])->name('pl')->middleware('perm:finance.view');
     Route::get('aging', [\App\Http\Controllers\Finance\FinanceReportController::class,'aging'])->name('aging')->middleware('perm:finance.view');
+    Route::get('intercompany', [\App\Http\Controllers\Finance\FinanceReportController::class,'intercompany'])->name('intercompany')->middleware('perm:finance.view');
+    Route::get('bankrec', [\App\Http\Controllers\Finance\BankRecController::class,'index'])->name('bankrec.index')->middleware('perm:finance.view');
+    Route::get('bankrec/create', [\App\Http\Controllers\Finance\BankRecController::class,'create'])->name('bankrec.create')->middleware('perm:finance.post');
+    Route::post('bankrec', [\App\Http\Controllers\Finance\BankRecController::class,'store'])->name('bankrec.store')->middleware('perm:finance.post');
+    Route::post('bankrec/{id}/confirm', [\App\Http\Controllers\Finance\BankRecController::class,'confirm'])->name('bankrec.confirm')->middleware('perm:finance.approve');
+    Route::get('budget', [\App\Http\Controllers\Finance\FinanceReportController::class,'budget'])->name('budget')->middleware('perm:finance.view');
     Route::get('closing', [\App\Http\Controllers\Finance\FinanceReportController::class,'closing'])->name('closing')->middleware('perm:finance.close');
     Route::post('closing/close', [\App\Http\Controllers\Finance\FinanceReportController::class,'doClose'])->name('closing.close')->middleware('perm:finance.close');
     Route::post('closing/reopen', [\App\Http\Controllers\Finance\FinanceReportController::class,'reopen'])->name('closing.reopen')->middleware('perm:finance.close');

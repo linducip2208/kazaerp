@@ -3,7 +3,7 @@ use Illuminate\Support\Facades\Route;
 Route::middleware(['auth','ctx'])->prefix('pet')->name('pet.')->group(function () {
     Route::resource('owners', \App\Http\Controllers\Pet\OwnerController::class)->middleware('perm:pet.view');
     Route::resource('pets', \App\Http\Controllers\Pet\PetController::class)->middleware('perm:pet.view');
-    Route::resource('vet', \App\Http\Controllers\Pet\VetAppointmentController::class)->middleware('perm:pet.view');
+    Route::resource('vet', \App\Http\Controllers\Pet\VetAppointmentController::class)->middleware('perm:pet.treat');
     Route::resource('grooming', \App\Http\Controllers\Pet\GroomingOrderController::class)->middleware('perm:pet.groom');
     Route::resource('boarding', \App\Http\Controllers\Pet\BoardingReservationController::class)->middleware('perm:pet.board');
     Route::post('boarding/book', [\App\Http\Controllers\Pet\BoardingCheckinController::class,'store'])->name('boarding.book')->middleware('perm:pet.board');
@@ -16,6 +16,7 @@ Route::middleware(['auth','ctx'])->prefix('mfg')->name('mfg.')->group(function (
 });
 Route::middleware(['auth','ctx'])->prefix('thrift')->name('thrift.')->group(function () {
     Route::resource('lots', \App\Http\Controllers\Thrift\LotController::class)->middleware('perm:thrift.view');
+    Route::post('lots/{id}/allocate', [\App\Http\Controllers\Thrift\LotController::class,'allocate'])->name('lots.allocate')->middleware('perm:thrift.manage');
     Route::resource('items', \App\Http\Controllers\Thrift\ItemController::class)->middleware('perm:thrift.view');
     Route::post('live/reserve', [\App\Http\Controllers\Thrift\LiveOrderController::class,'reserve'])->name('live.reserve')->middleware('perm:thrift.live');
 });
@@ -42,6 +43,7 @@ Route::middleware(['auth','ctx'])->prefix('reports')->name('reports.')->group(fu
     Route::get('sales', [\App\Http\Controllers\ReportController::class,'sales'])->name('sales')->middleware('perm:reports.view');
     Route::get('inventory', [\App\Http\Controllers\ReportController::class,'inventory'])->name('inventory')->middleware('perm:reports.view');
     Route::get('purchase', [\App\Http\Controllers\ReportController::class,'purchase'])->name('purchase')->middleware('perm:reports.view');
+    Route::get('aging', [\App\Http\Controllers\ReportController::class,'aging'])->name('aging')->middleware('perm:reports.view');
     Route::get('import/customers', [\App\Http\Controllers\ImportController::class,'customers'])->name('import.customers')->middleware('perm:crm.create');
     Route::post('import/customers', [\App\Http\Controllers\ImportController::class,'customersStore'])->name('import.customers.store')->middleware('perm:crm.create');
     Route::get('import/products', [\App\Http\Controllers\ImportController::class,'products'])->name('import.products')->middleware('perm:crm.create');

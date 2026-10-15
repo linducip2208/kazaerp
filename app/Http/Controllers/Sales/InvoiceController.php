@@ -46,9 +46,16 @@ class InvoiceController extends CrudController {
                 $lines[]=['product_id'=>$p->id,'snapshot_name'=>$p->name,'qty'=>$l['qty'],'price'=>$l['price'],'discount'=>0,'tax_rate'=>11,'line_total'=>$lt*1.11,'created_at'=>now(),'updated_at'=>now()];
             }
             $tax=$sub*0.11; $grand=$sub+$tax;
+            $disc = 0; $voucherId = null;
+            if ($r->filled('voucher_code')) {
+                $vv = \App\Services\VoucherService::validate(trim($r->voucher_code), $eid, $grand);
+                $disc = $vv['discount']; $voucherId = $vv['id'];
+                $grand -= $disc;
+            }
             $inv = \App\Models\Sales\Invoice::create(['legal_entity_id'=>$eid,'branch_id'=>$bid,'number'=>$number,'date'=>$r->date,
                 'customer_id'=>$r->customer_id,'sales_order_id'=>$r->sales_order_id,'due_date'=>$r->due_date,
-                'status'=>'posted','pay_status'=>'unpaid','subtotal'=>$sub,'discount'=>0,'tax'=>$tax,'grand_total'=>$grand,'paid_total'=>0,'created_by'=>$u->id]);
+                'status'=>'posted','pay_status'=>'unpaid','subtotal'=>$sub,'discount'=>$disc,'tax'=>$tax,'grand_total'=>$grand,'paid_total'=>0,'created_by'=>$u->id]);
+            if ($voucherId) \App\Services\VoucherService::consume($voucherId);
             foreach ($lines as &$ln) $ln['invoice_id']=$inv->id;
             DB::table('invoice_lines')->insert($lines);
             // keluarkan stok + jurnal piutang/pendapatan
@@ -89,6 +96,7 @@ class InvoiceController extends CrudController {
                 'method'=>$r->method,'amount'=>$r->amount,'created_by'=>$u->id,'created_at'=>now(),'updated_at'=>now()]);
             $paid = (float)$inv2->paid_total + (float)$r->amount;
             $inv2->update(['paid_total'=>$paid,'pay_status'=> $paid >= (float)$inv2->grand_total - 0.005 ? 'paid' : 'partial']);
+            if ($inv2->fresh()->pay_status === 'paid') \App\Services\VoucherService::accrueOnPaid($inv2->id);
             // jurnal kas vs piutang
             $coa = fn($code)=>DB::table('coas')->where(['legal_entity_id'=>$inv2->legal_entity_id,'code'=>$code])->value('id');
             if ($coa('1000') && $coa('1200')) {

@@ -44,4 +44,10 @@
 | F-API-01 | API v1 token + guard entitas | P2 | DONE | routes/api.php, Phase2Test |
 | F-OPS-01 | Backup command + scheduler + AdminSeeder | P2 | DONE | kaza:backup, console.php, AdminSeeder |
 | F-SEC-01 | Security headers + cabut sesi nonaktif | P1 | DONE | SecurityHeaders, CheckActiveUser |
+| F-AUTH-03 | 2FA TOTP + challenge + QR lokal | P1 | DONE | TwoFactorController, Phase3Test |
+| F-FILE-01 | File privat + download terotorisasi + isolasi | P0 | DONE | SecureFileController, Phase3Test |
+| F-PET-03 | Rekam medis hanya peran klinis | P0 | DONE | route pet.treat, Phase3Test |
+| F-THR-02 | Alokasi biaya lot (rata/proporsional) | P2 | DONE | LotController@allocate, Phase3Test |
+| F-MKT-02 | Voucher apply + loyalty accrual | P2 | DONE | VoucherService, Phase3Test |
+| F-REP-02 | Stok menua, worksheet intercompany, budget vs aktual, rekonsiliasi bank | P1 | DONE | Report/FinanceReport/BankRecController |
 | F-DELTA-01 | Grafik tren dashboard, eliminasi intercompany otomatis, worker/queue, approval delegasi UI | P3 | PENDING | ROADMAP |

@@ -1,8 +1,16 @@
 # Test Results (dari run nyata — bukan klaim)
 
-## Suite penuh v0.2.0 — 2026-10-15 (MySQL `kazaerp_testing`)
+## Suite penuh v0.3.0 — 2026-10-15 (MySQL `kazaerp_testing`)
 - Perintah: `php artisan test`
-- Hasil: **20 passed, 0 failed, 0 skipped — 82 assertions — durasi 747.74s**
+- Hasil: **26 passed, 0 failed, 0 skipped — 119 assertions**
+- 20 test v0.1–v0.2 tetap hijau (regresi nihil) + 6 test Phase3Test baru:
+  - 2FA penuh (setup QR → confirm → challenge → dashboard non-admin 200; sekaligus menemukan & memperbaiki bug `$perEntity` array untuk non-admin)
+  - file privat (403 lintas entitas), vet butuh pet.treat, alokasi equal & price,
+  - voucher (salah ditolak, diskon + used + poin), bankrec matched/draft + budget/aging/intercompany OK
+- DB pengujian: MySQL (locking & constraints nyata). Log: `storage/logs/finaltest3.log`.
+
+## Riwayat v0.2.0 (arsip)
+- Hasil v0.2.0: **20 passed — 82 assertions** (`storage/logs/finaltest2.log`).
 - 16 test v0.1.0 tetap hijau (regresi nihil) + 4 test Phase2Test baru:
   - bayar utang partial/paid + overpay ditolak + jurnal balance
   - payroll approve → jurnal gaji Rp4.500.000 balance (6100→2300)

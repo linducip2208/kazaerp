@@ -28,11 +28,34 @@ class ReportController extends Controller {
             ->select('stock_ledgers.*','products.sku','products.name as product')->orderByDesc('stock_ledgers.id')->paginate(25)->withQueryString();
         return view('modules.reports.inventory', compact('rows'));
     }
-    public function purchase(Request $r) {
-        $ctx = session('erp_context',[]); $eid = $ctx['legal_entity_id'] ?? auth()->user()->legal_entity_id;
+    public function purchase(Request $r) {        $ctx = session('erp_context',[]); $eid = $ctx['legal_entity_id'] ?? auth()->user()->legal_entity_id;
         $rows = DB::table('purchase_orders')->join('suppliers','suppliers.id','=','purchase_orders.supplier_id')
             ->where('purchase_orders.legal_entity_id',$eid)->select('purchase_orders.*','suppliers.name as supplier')
             ->orderByDesc('purchase_orders.id')->paginate(25)->withQueryString();
         return view('modules.reports.purchase', compact('rows'));
+    }
+    /** Stok menua/lambat: hari sejak mutasi terakhir + ketegori umur. */
+    public function aging(Request $r)
+    {
+        $ctx = session('erp_context', []);
+        $eid = $ctx['legal_entity_id'] ?? auth()->user()->legal_entity_id;
+        $days = (int) $r->get('days', 30);
+        $rows = DB::table('stock_balances')->join('products', 'products.id', '=', 'stock_balances.product_id')
+            ->join('warehouses', 'warehouses.id', '=', 'stock_balances.warehouse_id')
+            ->leftJoin('stock_ledgers as last_move', function ($j) {
+                $j->on('last_move.warehouse_id', '=', 'stock_balances.warehouse_id')
+                    ->on('last_move.product_id', '=', 'stock_balances.product_id');
+            })
+            ->where('products.legal_entity_id', $eid)
+            ->whereRaw('stock_balances.qty_on_hand - stock_balances.qty_reserved > 0')
+            ->selectRaw('warehouses.code as wh, products.sku, products.name as product,
+                stock_balances.qty_on_hand, stock_balances.qty_reserved,
+                MAX(last_move.created_at) as last_move_at,
+                DATEDIFF(CURDATE(), MAX(last_move.created_at)) as age_days')
+            ->groupBy('warehouses.code', 'products.sku', 'products.name', 'stock_balances.qty_on_hand', 'stock_balances.qty_reserved')
+            ->having('age_days', '>=', $days)
+            ->orderByDesc('age_days')->paginate(25)->withQueryString();
+
+        return view('modules.reports.aging', compact('rows', 'days'));
     }
 }

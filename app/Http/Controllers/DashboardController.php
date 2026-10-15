@@ -21,7 +21,7 @@ class DashboardController extends Controller
             ->whereRaw('qty_on_hand - qty_reserved <= 5')->count();
         $pendingApprovals = DB::table('approvals')->where('status', 'pending')->count();
         $orders = DB::table('sales_orders')->when($eid, fn ($q) => $q->where('legal_entity_id', $eid))->where('status', '!=', 'cancelled')->orderByDesc('id')->limit(8)->get();
-        $perEntity = [];
+        $perEntity = collect();
         if ($u->hasRole('super_admin', 'holding_owner', 'executive')) {
             $perEntity = DB::table('invoices')->join('legal_entities', 'legal_entities.id', '=', 'invoices.legal_entity_id')
                 ->selectRaw('legal_entities.code, legal_entities.name, SUM(invoices.grand_total) as total')

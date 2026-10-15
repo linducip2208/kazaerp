@@ -44,8 +44,7 @@ class FinanceReportController extends Controller {
             ->groupBy('coas.code','coas.name','coas.type')->orderBy('coas.code')->get();
         return view('modules.finance.reports.pl', ['revenue'=>$rev,'expense'=>$exp,'net'=>$rev-$exp,'detail'=>$detail]);
     }
-    public function aging(Request $r) {
-        $kind = $r->get('kind','ar');
+    public function aging(Request $r) {        $kind = $r->get('kind','ar');
         if ($kind==='ap') {
             $rows = DB::table('vendor_invoices')->join('suppliers','suppliers.id','=','vendor_invoices.supplier_id')
                 ->where('vendor_invoices.legal_entity_id',$this->eid())
@@ -78,5 +77,51 @@ class FinanceReportController extends Controller {
         DB::table('fiscal_periods')->where('id',$p->id)->update(['is_closed'=>false]);
         DB::table('period_closings')->insert(['fiscal_period_id'=>$p->id,'status'=>'reopened','note'=>$r->reason,'closed_by'=>auth()->id(),'created_at'=>now(),'updated_at'=>now()]);
         return back()->with('ok','Periode dibuka kembali (tercatat + butuh permission finance.close).');
+    }
+    /** Worksheet eliminasi intercompany: dasar manual untuk Finance (otomatisasi butuh kebijakan). */
+    public function intercompany(Request $r)
+    {
+        $txns = DB::table('intercompany_txns')
+            ->join('legal_entities as f', 'f.id', '=', 'intercompany_txns.from_entity_id')
+            ->join('legal_entities as t', 't.id', '=', 'intercompany_txns.to_entity_id')
+            ->when($r->from, fn ($q) => $q->where('intercompany_txns.date', '>=', $r->from))
+            ->when($r->to, fn ($q) => $q->where('intercompany_txns.date', '<=', $r->to))
+            ->select('intercompany_txns.*', 'f.code as from_code', 't.code as to_code')
+            ->orderByDesc('intercompany_txns.id')->paginate(20)->withQueryString();
+        $pairs = DB::table('intercompany_txns')
+            ->join('legal_entities as f', 'f.id', '=', 'intercompany_txns.from_entity_id')
+            ->join('legal_entities as t', 't.id', '=', 'intercompany_txns.to_entity_id')
+            ->when($r->from, fn ($q) => $q->where('intercompany_txns.date', '>=', $r->from))
+            ->when($r->to, fn ($q) => $q->where('intercompany_txns.date', '<=', $r->to))
+            ->selectRaw('f.code as dari, t.code as ke, SUM(intercompany_txns.amount) as total, COUNT(*) as n')
+            ->groupBy('f.code', 't.code')->get();
+
+        return view('modules.finance.reports.intercompany', compact('txns', 'pairs'));
+    }
+    /** Budget vs aktual per akun (aktual = mutasi jurnal periode budget). */
+    public function budget(Request $r)
+    {
+        $budgets = DB::table('budgets')->where('legal_entity_id', $this->eid())->orderByDesc('id')->get();
+        $bid = $r->get('budget_id', $budgets->first()->id ?? null);
+        $lines = [];
+        if ($bid) {
+            $b = DB::table('budgets')->where('id', $bid)->first();
+            $fy = DB::table('fiscal_years')->where('id', $b->fiscal_year_id)->first();
+            $lines = DB::table('budget_lines')->join('coas', 'coas.id', '=', 'budget_lines.coa_id')
+                ->leftJoin('journal_lines', 'journal_lines.coa_id', '=', 'budget_lines.coa_id')
+                ->leftJoin('journals', function ($j) use ($fy) {
+                    $j->on('journals.id', '=', 'journal_lines.journal_id');
+                    if ($fy) {
+                        $j->where('journals.date', '>=', $fy->start_date)->where('journals.date', '<=', $fy->end_date);
+                    }
+                })
+                ->where('budget_lines.budget_id', $bid)
+                ->selectRaw('coas.code, coas.name, budget_lines.amount as budget,
+                    COALESCE(SUM(journal_lines.debit - journal_lines.credit),0) as actual_net')
+                ->groupBy('coas.code', 'coas.name', 'budget_lines.amount')
+                ->orderBy('coas.code')->get();
+        }
+
+        return view('modules.finance.reports.budget', compact('budgets', 'lines', 'bid'));
     }
 }

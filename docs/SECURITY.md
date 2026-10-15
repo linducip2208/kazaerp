@@ -5,10 +5,15 @@ Aktor: pengguna internal lintas cabang, mantan karyawan (akun aktif), penyerang 
 
 ## Kontrol terimplementasi
 - Auth: hash bcrypt, akun nonaktif ditolak, throttle login 10/menit, session regenerate, CSRF, logout invalidasi.
+- 2FA TOTP opsional per pengguna (QR SVG lokal, challenge setelah password, disable wajib password, diaudit).
+- Sesi dicabut seketika bila akun dinonaktifkan (middleware CheckActiveUser).
+- Header keamanan: nosniff, SAMEORIGIN, referrer; HSTS + CSP ketat di production.
 - Authorization: middleware `perm` + scope entity di semua query sensitif + `inScope()`; super_admin bypass eksplisit.
 - Isolasi dibuktikan IsolationTest (404 lintas entitas, payroll 403 untuk cashier).
 - Audit: `audit_logs` (aktor, waktu, entitas, aksi, ref, perubahan — tanpa secret) + `login_activities` + `doc_status_histories`.
-- File: upload validasi tipe/ukuran (CSV 2MB; desain via storage), download lewat controller terotorisasi (pending: pindahkan ke disk private + signed URL).
+- File: upload validasi tipe/ukuran (maks 10MB, daftar mime eksplisit) ke `storage/app/private`;
+  download SELALU lewat controller terotorisasi per tipe pemilik (pelanggan dalam entitas, medis hanya klinis,
+  karyawan hanya HR/pemilik) + tercatat di audit. Tidak ada URL publik ke file sensitif.
 - Error: halaman 403/404/500 tanpa stack trace; log server-side saja.
 - Secret: `.env` tidak di-commit (hanya `.env.example`); tidak ada secret di log/audit.
 

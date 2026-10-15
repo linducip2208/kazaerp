@@ -1,5 +1,14 @@
 # Changelog
 
+## v0.3.0 — 2026-10-15
+- 2FA TOTP (setup QR SVG lokal, challenge login, disable berpassword).
+- File privat (`storage/app/private`) + download terotorisasi per tipe pemilik + audit download.
+- Rekam medis veteriner hanya `pet.treat`; worksheet eliminasi intercompany (manual).
+- Alokasi biaya lot thrift (rata / proporsional harga).
+- Voucher di invoice (validasi periode/kuota/minimum/entitas) + loyalty accrual saat lunas.
+- Laporan stok menua, budget vs aktual, rekonsiliasi bank (matched/draft + konfirmasi).
+- Test Phase3Test (6 test) — hijau.
+
 ## v0.2.0 — 2026-10-15
 - API v1 Sanctum (login/me/logout, invoices, stock, products + entity guard + revoke).
 - Pembayaran utang vendor (partial/paid + jurnal 2000→1000 + guard overpay).

@@ -33,7 +33,7 @@ document.addEventListener('DOMContentLoaded', () => {
 <div class="col-sm-6 col-lg-3"><div class="card"><div class="card-body"><div class="text-muted">Posisi Kas</div><div class="h1">{{ idr($fin['cash']) }}</div></div></div></div>
 <div class="col-sm-6 col-lg-3"><div class="card"><div class="card-body"><div class="text-muted">Dokumen Belum Posting</div><div class="h1">{{ $fin['unposted'] }}</div></div></div></div>
 <div class="col-sm-6 col-lg-3"><div class="card"><div class="card-body"><div class="text-muted">Piutang Overdue</div><div class="h1">{{ idr($fin['overdue_ar']) }}</div></div></div></div>
-<div class="col-sm-6 col-lg-3"><div class="card"><div class="card-body"><div class="text-muted">Periode Aktif</div><div class="h1">{{ $fin['period']->name ?? '-' }} {{ ($fin['period']->is_closed ?? false) ? '(Tutup)' : '' }}</div></div></div></div>
+<div class="col-sm-6 col-lg-3"><div class="card"><div class="card-body"><div class="text-muted">Periode Aktif</div><div class="h1">{{ $fin['period'] ? $fin['period']->name : '-' }} {{ ($fin['period'] && $fin['period']->is_closed) ? '(Tutup)' : '' }}</div></div></div></div>
 </div>
 @endif
 @if($ops)

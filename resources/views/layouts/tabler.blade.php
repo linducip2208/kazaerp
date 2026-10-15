@@ -109,7 +109,10 @@ $notifCount = DB::table('notifications')->where('user_id', auth()->id())->whereN
 <a class="dropdown-item" href="{{ route('finance.ledger') }}">Buku Besar</a>
 <a class="dropdown-item" href="{{ route('finance.trial') }}">Neraca Saldo</a>
 <a class="dropdown-item" href="{{ route('finance.pl') }}">Laba Rugi</a>
+<a class="dropdown-item" href="{{ route('finance.budget') }}">Budget vs Aktual</a>
+<a class="dropdown-item" href="{{ route('finance.bankrec.index') }}">Rekonsiliasi Bank</a>
 <a class="dropdown-item" href="{{ route('finance.aging') }}">Aging AR/AP</a>
+<a class="dropdown-item" href="{{ route('finance.intercompany') }}">Worksheet Intercompany</a>
 <a class="dropdown-item" href="{{ route('finance.closing') }}">Tutup Periode</a>
 </div></li>
 @endif
@@ -157,6 +160,7 @@ $notifCount = DB::table('notifications')->where('user_id', auth()->id())->whereN
 <div class="dropdown-menu">
 <a class="dropdown-item" href="{{ route('reports.sales') }}">Penjualan</a>
 <a class="dropdown-item" href="{{ route('reports.inventory') }}">Inventori</a>
+<a class="dropdown-item" href="{{ route('reports.aging') }}">Stok Menua</a>
 <a class="dropdown-item" href="{{ route('reports.purchase') }}">Pembelian</a>
 </div></li>
 @endif

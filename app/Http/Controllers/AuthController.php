@@ -22,6 +22,14 @@ class AuthController extends Controller {
         }
         $r->session()->regenerate();
         $u = Auth::user();
+        // 2FA: bila aktif, tunda login penuh sampai kode TOTP terverifikasi
+        if ($u->two_factor_confirmed_at) {
+            $r->session()->put('2fa_pending', $u->id);
+            $r->session()->put('2fa_remember', $r->boolean('remember'));
+            Auth::logout();
+
+            return redirect()->route('2fa.challenge');
+        }
         $u->forceFill(['last_login_at'=>now()])->save();
         $r->session()->put('erp_context',['holding_id'=>$u->holding_id,'legal_entity_id'=>$u->legal_entity_id,'branch_id'=>$u->branch_id]);
         DB::table('login_activities')->insert(['user_id'=>$u->id,'email'=>$email,'ip'=>$r->ip(),'agent'=>substr((string)$r->userAgent(),0,250),'success'=>true,'created_at'=>now()]);
