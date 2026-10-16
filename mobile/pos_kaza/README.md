@@ -53,6 +53,10 @@ Catatan build:
 - **Terverifikasi 16 Okt 2026**: APK rilis terbangun → `build/app/outputs/flutter-apk/app-release.apk`
   (47,7 MB, SHA256 `2FC0CA8D…FB483D3`, log `storage/logs/flutter_build_apk2.log`).
   Sekali per mesin build: `flutter doctor --android-licenses` (butuh diterima).
+- **Fix v0.5.2 (16 Okt 2026)**: manifest rilis memuat `INTERNET` (tanpa ini APK rilis tidak dapat memanggil
+  API — template Flutter hanya menaruh permission di manifest debug) + `usesCleartextTraffic` untuk server
+  dev HTTP. APK diverifikasi end-to-end di emulator: login → buka shift → katalog → checkout `…/00002`
+  tersimpan (lihat `docs/TEST_RESULTS.md`). SHA256 APK terbaru `AC479721…DDB267`.
 - APK rilis memakai **debug signing** (default template, lihat `android/app/build.gradle.kts`) —
   untuk distribusi produksi siapkan keystore rilis + `signingConfigs` sendiri.
 - Windows beda drive (pub cache `C:`, project `D:`): `kotlin.incremental=false` sudah diset di

@@ -1,4 +1,4 @@
-# Implementation Status (per 16 Okt 2026 — v0.5.1)
+# Implementation Status (per 16 Okt 2026 — v0.5.2)
 
 ## Selesai (DONE, bukti run nyata)
 - Foundation: Laravel 11.57 + PHP 8.3.30 + MySQL 8.4.9; 179 tabel; migrate:fresh hijau; seed hijau.
@@ -15,6 +15,7 @@
 - v0.4.3 baru: `kaza:admin-create` (admin produksi idempoten per email), alert kedaluwarsa batch (`kaza:expiry-alerts` + job `SendBatchExpiryAlert`, scheduler harian 08:30, dedupe 24 jam, hanya batch berstok), smoke otomatis 70 halaman menu (semua 200).
 - v0.5.0 baru: aplikasi POS mobile offline-first (Flutter `mobile/pos_kaza`) — antrean lokal SharedPreferences + sinkron idempoten `client_ref`, shift kasir buka/tutup, halaman antrean (pending/tersinkron/ditolak + retry); `flutter analyze` 0 issue, `flutter test` 21/21, `flutter build web` sukses, smoke live replay 200 `replayed: true` dari kode klien asli.
 - v0.5.1 baru: guard anti double-tap + `try/finally` alur checkout POS; **APK rilis Android terbangun** (`app-release.apk` 47,7 MB, SHA256 `2FC0CA8D…FB483D3`) — Android licenses diterima; workaround Kotlin Windows lintas-drive (`kotlin.incremental=false`).
+- v0.5.2 baru: fix izin `INTERNET` manifest rilis (APK v0.5.1 tidak bisa akses jaringan) + cleartext dev; **verifikasi end-to-end dari APK di emulator** — login → buka shift → katalog → checkout tersimpan `MZA-HOLD/PST/POS/2026/10/00002` (paid, 83.250) + ledger stok `pos_sale #2`; `kaza:audit-integrity` OK.
 
 ## Parsial (berfungsi inti, perlu pendalaman)
 Intercompany (register + worksheet eliminasi manual — otomatis menunggu kebijakan), HPP sederhana (`none` — FIFO/average menunggu keputusan), integrasi vendor eksternal (marketplace/WA/payment gateway — kredensial belum ada), GPS pihak ketiga (arsitektur push siap).

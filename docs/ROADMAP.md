@@ -15,6 +15,7 @@
   - ✅ v0.4.3: `kaza:admin-create` (admin produksi interaktif), alert batch kedaluwarsa (`kaza:expiry-alerts`, scheduler 08:30), smoke otomatis 70 halaman (`SmokePagesTest`).
   - ✅ v0.5.0: aplikasi POS mobile offline-first (Flutter `mobile/pos_kaza`) — antrean lokal + retry idempoten `client_ref`, shift kasir; flutter test 21/21 + smoke live replay 200.
   - ✅ v0.5.1: guard checkout POS (anti double-tap + `try/finally`), **APK rilis Android terbangun** (47,7 MB, SHA256 `2FC0CA8D…`) — licenses diterima, workaround Kotlin Windows lintas-drive.
+  - ✅ v0.5.2: fix permission `INTERNET` manifest rilis + `usesCleartextTraffic` dev; **E2E dari APK di emulator** (login → shift → checkout sale `…/00002` tersimpan + `kaza:audit-integrity` OK).
   - ⏳ Sinkronisasi marketplace adapter nyata — menunggu kredensial/pilihan vendor.
   - ⏳ GPS vendor produksi (server-side provider) — arsitektur sudah siap menerima.
 - v1.0: UAT + hardening produksi (2FA, header, backup teruji) + go-live bertahap per entitas.

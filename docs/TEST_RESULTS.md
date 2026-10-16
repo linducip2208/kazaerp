@@ -1,5 +1,19 @@
 # Test Results (dari run nyata — bukan klaim)
 
+## Mobile v0.5.2 (fix izin INTERNET + E2E dari APK rilis di emulator) — 2026-10-16
+- **Temuan & fix**: APK rilis v0.5.1 gagal memanggil API — manifest utama tidak memuat permission `INTERNET` (template Flutter hanya menaruhnya di manifest debug); app menampilkan "Tidak dapat terhubung ke server" dan tidak ada request yang tercatat di server. Fix: `INTERNET` + `android:usesCleartextTraffic="true"` (khusus server dev HTTP; produksi wajib HTTPS) → rebuild APK.
+- **E2E dari APK release** (`id.kazaka.pos_kaza` di emulator-5554, Android 17/API 37) — semua dijalankan dari UI app, bukan skrip:
+  1. `adb install -r` → **Success**; launch bersih (`Displayed …MainActivity +2s900ms`, tanpa FATAL).
+  2. Login dari form app → `POST /api/v1/login` (log server 21:09:46) → token Sanctum **id=2** (`personal_access_tokens` created 21:09:52).
+  3. Buka shift (kas awal 100.000) → `POST /api/v1/pos/shift/open` (log 21:14:41).
+  4. Katalog: `GET /api/v1/pos/shift` + `GET /api/v1/products` (21:09:52–53); produk "Produk Demo" (DEMO-001, Rp 75.000) tampil.
+  5. Keranjang 1 item → Tunai → `POST /api/v1/pos/checkout` (log 21:22:55) → snackbar app **"Tersimpan: MZA-HOLD/PST/POS/2026/10/00002"**.
+  6. Verifikasi DB: `pos_sales` id=2 (number …00002, status `paid`, grand total 83.250 = 75.000 + PPN 11%, `shift_id=2`, `client_ref` dibuat app); `pos_sale_lines` id=2 (Produk Demo qty 1 @75.000); `stock_ledgers` id=4 (`pos_sale #2`, qty −1, 21:22:55) → saldo `stock_balances` product 1 = **6,0000** (10 − 2 invoice − 2 POS) — konsisten manual.
+  7. `php artisan kaza:audit-integrity` dengan data di atas: **AUDIT OK — 0 temuan** (saldo stok vs ledger, ledger yatim, balance jurnal, paid_total invoice).
+- Bukti lokal (`storage/logs/`, tidak di-commit): `serve8099b.out.log` (baris request login/shift/checkout), `flutter_build_apk3.log` (rebuild 89,0s), screenshot `emulator_3_login.png` … `emulator_20_submit.png` (snackbar "Tersimpan").
+- Catatan operasional emulator: instance lama (hidup 2 hari) ANR SystemUI → `screencap`/`adb install` menggantung; dilakukan cold boot ulang (`-no-window -gpu swiftshader_indirect`) dan navigasi diganti **3-button** agar tombol paling bawah app tidak tertutup zona gesture (kembalikan: `cmd overlay enable --user 0 com.android.internal.systemui.navbar.gestural`).
+- APK rilis final (dengan fix): 47,7 MB, SHA256 `AC4797212E45AABC9050F151C5252170819930ACC211E2E00BACE4D730DDB267`.
+
 ## Mobile v0.5.1 (patch checkout + APK rilis) — 2026-10-16
 - Patch POS (anti double-tap + guard `try/finally` alur keranjang): `flutter analyze` **0 issue**; `flutter test` **21 passed** (log `storage/logs/flutter_v051_verify.log`).
 - `php artisan kaza:audit-integrity` di DB dev (berisi hasil smoke live POS): **AUDIT OK, 0 temuan** — saldo stok, jurnal, dan pembayaran invoice konsisten.

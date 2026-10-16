@@ -1,5 +1,10 @@
 # Changelog
 
+## v0.5.2 — 2026-10-16
+- **Fix bug rilis**: permission `INTERNET` ditambahkan ke `AndroidManifest.xml` utama — APK rilis v0.5.1 tidak dapat memanggil API sama sekali (template Flutter hanya menaruh permission di manifest debug); `android:usesCleartextTraffic="true"` menyalakan HTTP untuk server dev (produksi tetap wajib HTTPS).
+- **Verifikasi end-to-end dari APK rilis di emulator Android** (bukan sekadar build): install → login (`POST /api/v1/login`, token Sanctum id=2) → buka shift kas 100.000 (`POST /api/v1/pos/shift/open`) → katalog dimuat (`GET /api/v1/products`) → keranjang → `POST /api/v1/pos/checkout` → penjualan **MZA-HOLD/PST/POS/2026/10/00002** (paid, total 83.250) + ledger stok `pos_sale #2` = −1; `kaza:audit-integrity` OK 0 temuan (rincian & screenshot: TEST_RESULTS.md).
+- APK rilis dengan fix: 47,7 MB, SHA256 `AC4797212E45AABC9050F151C5252170819930ACC211E2E00BACE4D730DDB267` (menggantikan hash v0.5.1).
+
 ## v0.5.1 — 2026-10-16
 - POS mobile diperkuat: tombol **Bayar & Simpan** anti double-tap (tidak bisa mem-pop dua kali) dan alur keranjang memakai guard `_cartFlowBusy` dengan `try/finally` — tidak mungkin terkunci bila terjadi error tak terduga.
 - **APK rilis Android terbangun pertama kali** di mesin ini: `flutter build apk --release` → `build/app/outputs/flutter-apk/app-release.apk` (47,7 MB, SHA256 `2FC0CA8DCC952F1F79924DD391887A5B47A6A2260E4BEAFA1D001FAE5FB483D3`); Android SDK licenses diterima; rantai bukti source final 15:01 → AOT 15:03 → APK 15:06, rebuild bersih 19,6s dengan hash identik.
