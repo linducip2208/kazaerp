@@ -68,13 +68,15 @@ class PosController extends Controller
             'lines.*.qty' => 'required|numeric|min:0.0001',
             'pay_method' => 'required|in:cash,transfer,qris',
             'customer_id' => 'nullable|integer',
+            'client_ref' => 'nullable|string|max:80',
         ]);
         try {
-            $sale = PosService::checkout($this->eid($r), $this->bid($r), (int) $r->user()->id, $r->lines, $r->pay_method, $r->customer_id ? (int) $r->customer_id : null);
+            $sale = PosService::checkout($this->eid($r), $this->bid($r), (int) $r->user()->id, $r->lines, $r->pay_method, $r->customer_id ? (int) $r->customer_id : null, $r->client_ref ? (string) $r->client_ref : null);
         } catch (\Throwable $e) {
             abort(422, $e->getMessage());
         }
 
-        return response()->json(['data' => $sale], 201);
+        // Replay (client_ref sama) → 200 tanpa efek dobel; penjualan baru → 201.
+        return response()->json(['data' => $sale], ($sale['replayed'] ?? false) ? 200 : 201);
     }
 }

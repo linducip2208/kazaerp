@@ -16,5 +16,8 @@
   reset password mandiri penuh (email tak dikenal ditolak; token diambil dari notifikasi; token salah ditolak; reset sukses → hash baru, password lama mati);
   queue worker nyata (job di-dispatch ke antrean database → `queue:work --once` memproses → notifikasi terbuat & antrean bersih);
   backup command (file .gz terbentuk, > 1KB, magic gzip; skip bila `mysqldump` tidak tersedia).
+- Phase6 (`tests/Feature/Phase6Test.php`): idempotensi checkout POS via `client_ref` (201 baru → 200 replay, id/no sama, stok tidak dobel, retry tetap aman setelah shift ditutup; ref berbeda → penjualan baru);
+  `kaza:audit-integrity` (kondisi bersih → exit 0; kerusakan saldo stok/jurnal/invoice terdeteksi → exit 1 + nomor dokumen);
+  rate limit API (60 request/menit OK, ke-61 → 429).
 - Acceptance: checklist + smoke HTTP 22 halaman (login, CRUD, POS, laporan) — bukti di TEST_RESULTS.md.
 - Regresi: full `php artisan test` tiap perubahan; static: `php -l` per file + `composer validate`.

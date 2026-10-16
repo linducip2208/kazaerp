@@ -59,4 +59,7 @@
 | F-API-02 | API POS: shift open/close + checkout (harga tier) | P2 | DONE | Api\PosController, PosService, Phase4Test |
 | F-API-03 | GPS transport: push posisi + tracking web | P2 | DONE | Api\TransportController, TransportTrackingController, Phase4Test |
 | F-OPS-02 | Queue worker: overdue alerts (job + scheduler 08:00) | P2 | DONE | SendOverdueInvoiceAlert, kaza:overdue-alerts, Phase4Test, drain `queue:work` Phase5Test |
+| F-API-05 | Checkout POS idempoten via `client_ref` (sync offline aman) | P1 | DONE | PosService, Api\PosController, Phase6Test |
+| F-OPS-04 | Command `kaza:audit-integrity` (stok/jurnal/invoice) | P2 | DONE | AuditIntegrity, Phase6Test |
+| F-SEC-03 | Rate limit API 60 req/menit per user (429) | P2 | DONE | routes/api.php, Phase6Test |
 | F-DELTA-01 | Eliminasi intercompany otomatis (menunggu kebijakan) | P3 | PENDING | DECISIONS #4 |

@@ -1,6 +1,6 @@
 # Database (MySQL 8.4)
 
-- 178 tabel (lihat migrasi `database/migrations/2026_10_15_*.php`). Semua migrasi rerunnable dari DB kosong (`migrate:fresh` hijau).
+- 179 tabel (lihat migrasi `database/migrations/2026_10_15_*.php` + `2026_10_16_*.php`). Semua migrasi rerunnable dari DB kosong (`migrate:fresh` hijau).
 - Uang `decimal(18,2)`, qty `decimal(18,4)`. Tidak ada float untuk uang.
 - Business key unik: `doc_sequences.seq_key`, `*.number` unik per dokumen, `(legal_entity_id, code/sku)` untuk master, `(supplier_id, vendor_ref)` anti duplikat invoice, `live_orders.thrift_item_id` unik, `stock_balances` unik (wh, produk, varian, batch).
 - Index pada FK + kolom query (status, tanggal, ref_type/ref_id).
@@ -15,3 +15,6 @@
 - `work_orders`: `warehouse_id` (nullable), `standard_cost`, `actual_cost`, `variance_amount`, `started_at`, `completed_at`.
 - `work_order_lines`: `unit_cost` (biaya standar snapshot saat WO dibuat), `issued_unit_cost` (biaya aktual saat issue) — variance = standard − issued.
 - `sales_commissions`: `sales_order_id` kini nullable, + `invoice_id` (nullable), `basis_amount`, `rate_pct`, `approved_by`, `approved_at` — akrual komisi dari invoice tanpa SO.
+
+## Tambahan v0.4.2
+- `pos_sales.client_ref` (nullable): referensi idempoten dari perangkat POS (UUID dari klien); unik `(legal_entity_id, client_ref)` — retry checkout tidak menggandakan penjualan (NULL bebas berulang di MySQL).

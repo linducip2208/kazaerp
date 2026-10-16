@@ -4,7 +4,7 @@
 - Restore: buat DB kosong → `gunzip < backup.sql.gz | mysql kazaerp` → `php artisan migrate --force` (verifikasi) → cek `IMPLEMENTATION_STATUS`.
 - Log: `storage/logs/laravel.log`; antrean gagal: `php artisan queue:failed` / `queue:retry`.
 - Queue worker: `php artisan queue:work --tries=3` (supervisor/systemd); job terjadwal `kaza:overdue-alerts` (scheduler 08:00; dev tanpa worker: `kaza:overdue-alerts --sync`). Pantau `jobs`/`failed_jobs`.
-- DB maintenance: `ANALYZE/OPTIMIZE` berkala; pantau `stock_balances` vs `stock_ledgers` (rekonsiliasi: sum ledger vs saldo).
+- DB maintenance: `ANALYZE/OPTIMIZE` berkala; audit integritas: `php artisan kaza:audit-integrity` (saldo stok vs ledger, ledger yatim, balance jurnal, paid_total invoice vs pembayaran; exit 1 bila ada temuan → cocok untuk cron alerting).
 - Insiden: bekukan posting (maintenance mode), snapshot DB, periksa audit_logs + login_activities, reversal (jangan hapus).
 - Closing bulanan: rekonsiliasi bank → review unposted → tutup periode → backup.
 - Recovery: RTO target 4 jam, RPO 24 jam (sesuaikan + uji).

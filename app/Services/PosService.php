@@ -41,11 +41,20 @@ class PosService
         return ['shift_id' => $shift->id, 'system_total' => $sys, 'expected_cash' => $expected, 'difference' => $difference];
     }
 
-    /** Checkout POS: harga mengikuti tier pelanggan (bila dipilih), stok keluar via ledger. */
-    public static function checkout(int $eid, ?int $bid, int $userId, array $lines, string $payMethod, ?int $customerId = null): array
+    /** Checkout POS: harga mengikuti tier pelanggan (bila dipilih), stok keluar via ledger.
+     *  Idempoten bila `clientRef` diisi (retry POS mobile/offline tidak menggandakan penjualan). */
+    public static function checkout(int $eid, ?int $bid, int $userId, array $lines, string $payMethod, ?int $customerId = null, ?string $clientRef = null): array
     {
         if (!in_array($payMethod, ['cash', 'transfer', 'qris'], true)) {
             throw new \RuntimeException('Metode bayar tidak dikenal.');
+        }
+        // Replay cepat: retry dengan client_ref yang sama dikembalikan sebelum validasi shift
+        // (mis. retry sync offline setelah shift hari itu ditutup tetap aman/idempoten).
+        if ($clientRef) {
+            $prev = DB::table('pos_sales')->where('legal_entity_id', $eid)->where('client_ref', $clientRef)->first();
+            if ($prev) {
+                return self::saleSummary($prev);
+            }
         }
         $shift = DB::table('pos_shifts')->where(['cashier_id' => $userId, 'status' => 'open'])->first();
         if (!$shift) {
@@ -60,7 +69,14 @@ class PosService
             $tier = $cust->tier;
         }
 
-        return DB::transaction(function () use ($eid, $bid, $userId, $lines, $payMethod, $customerId, $tier, $shift) {
+        return DB::transaction(function () use ($eid, $bid, $userId, $lines, $payMethod, $customerId, $tier, $shift, $clientRef) {
+            // Replay: client_ref yang sama sudah pernah diproses → kembalikan penjualan lama (tanpa efek dobel).
+            if ($clientRef) {
+                $prev = DB::table('pos_sales')->where('legal_entity_id', $eid)->where('client_ref', $clientRef)->first();
+                if ($prev) {
+                    return self::saleSummary($prev);
+                }
+            }
             $ent = \App\Models\Org\LegalEntity::find($eid);
             $br = \App\Models\Org\Branch::find($bid);
             $number = DocNumberService::next('POS', $eid, $bid, $ent?->code, $br?->code);
@@ -84,12 +100,24 @@ class PosService
                 $lns[] = ['product_id' => $p->id, 'snapshot_name' => $p->name, 'qty' => $qty, 'price' => $price, 'line_total' => $lt, 'created_at' => now(), 'updated_at' => now()];
             }
             $tax = $sub * 0.11; $grand = $sub + $tax;
-            $saleId = (int) DB::table('pos_sales')->insertGetId([
-                'legal_entity_id' => $eid, 'branch_id' => $bid, 'number' => $number, 'date' => now()->toDateString(),
-                'shift_id' => $shift->id, 'customer_id' => $customerId, 'status' => 'paid',
-                'subtotal' => $sub, 'discount' => 0, 'tax' => $tax, 'grand_total' => $grand,
-                'pay_method' => $payMethod, 'created_by' => $userId, 'created_at' => now(), 'updated_at' => now(),
-            ]);
+            try {
+                $saleId = (int) DB::table('pos_sales')->insertGetId([
+                    'legal_entity_id' => $eid, 'branch_id' => $bid, 'number' => $number, 'client_ref' => $clientRef,
+                    'date' => now()->toDateString(),
+                    'shift_id' => $shift->id, 'customer_id' => $customerId, 'status' => 'paid',
+                    'subtotal' => $sub, 'discount' => 0, 'tax' => $tax, 'grand_total' => $grand,
+                    'pay_method' => $payMethod, 'created_by' => $userId, 'created_at' => now(), 'updated_at' => now(),
+                ]);
+            } catch (\Illuminate\Database\QueryException $e) {
+                // Balapan dua request dengan client_ref sama: unique index menolak → kembalikan yang menang.
+                if ($clientRef) {
+                    $prev = DB::table('pos_sales')->where('legal_entity_id', $eid)->where('client_ref', $clientRef)->first();
+                    if ($prev) {
+                        return self::saleSummary($prev);
+                    }
+                }
+                throw $e;
+            }
             foreach ($lns as &$ln) {
                 $ln['pos_sale_id'] = $saleId;
             }
@@ -102,8 +130,15 @@ class PosService
                 }
             }
 
-            return ['id' => $saleId, 'number' => $number, 'subtotal' => $sub, 'tax' => $tax, 'grand_total' => $grand];
+            return ['id' => $saleId, 'number' => $number, 'subtotal' => $sub, 'tax' => $tax, 'grand_total' => $grand, 'replayed' => false];
         });
+    }
+
+    /** Ringkasan penjualan POS (dipakai jalur replay idempoten). */
+    protected static function saleSummary(object $sale): array
+    {
+        return ['id' => (int) $sale->id, 'number' => $sale->number, 'subtotal' => (float) $sale->subtotal,
+            'tax' => (float) $sale->tax, 'grand_total' => (float) $sale->grand_total, 'replayed' => true];
     }
 
     public static function currentShift(int $userId): ?object

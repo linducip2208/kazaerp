@@ -23,6 +23,7 @@ Alasan alternatif vs `app/Modules/...`: mengikuti konvensi Laravel (autoload `Ap
 
 ## Events/jobs
 Job nyata: `App\Jobs\SendOverdueInvoiceAlert` — dispatch lewat command `kaza:overdue-alerts` (scheduler harian 08:00 di `routes/console.php`; idempoten 24 jam per notifikasi). Produksi: jalankan `php artisan queue:work` (supervisor); dev bisa `kaza:overdue-alerts --sync`. Notifikasi via `NotifyService` (bell + halaman).
+Audit integritas data: `php artisan kaza:audit-integrity` — verifikasi saldo stok vs ledger, ledger yatim, balance jurnal, dan paid_total invoice vs pembayaran; exit code 1 bila ada temuan.
 
 ## Authorization
 `perm:<nama>` di route + `hasPermission()` (super_admin bypass) + scope entity di `CrudController::baseQuery()` + `inScope()` untuk context switch. UI hanya menyembunyikan menu; keputusan selalu di server.

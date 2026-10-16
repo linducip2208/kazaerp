@@ -11,6 +11,7 @@
   - ✅ Komisi penjualan (akrual saat lunas + approve Finance).
   - ✅ Queue worker nyata: `kaza:overdue-alerts` + job (scheduler 08:00, idempoten).
   - ✅ Hardening v0.4.1: read-only auditor/viewer server-side, reset password diuji penuh, backup+restore terverifikasi (dump → scratch → identik).
+  - ✅ v0.4.2: checkout POS idempoten (`client_ref`) untuk sync offline, command `kaza:audit-integrity`, rate limit API 60 req/menit.
   - ⏳ Sinkronisasi marketplace adapter nyata — menunggu kredensial/pilihan vendor.
   - ⏳ GPS vendor produksi (server-side provider) — arsitektur sudah siap menerima.
 - v1.0: UAT + hardening produksi (2FA, header, backup teruji) + go-live bertahap per entitas.

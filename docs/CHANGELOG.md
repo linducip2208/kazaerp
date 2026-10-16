@@ -1,5 +1,12 @@
 # Changelog
 
+## v0.4.2 — 2026-10-16
+- Checkout POS idempoten via `client_ref` (unique per entitas): retry mobile/offline mengembalikan penjualan yang sama (200 `replayed: true`) tanpa dobel stok/jurnal — tetap aman walau shift sudah ditutup; balapan dua request ditutup unique index.
+- Command baru `php artisan kaza:audit-integrity`: audit saldo stok vs ledger, ledger yatim, balance jurnal (termasuk header vs baris), paid_total invoice vs pembayaran; exit code 1 bila ada temuan (cocok untuk cron/monitoring).
+- Rate limit API: seluruh endpoint terautentikasi dibatasi 60 request/menit per pengguna (ke-61 → 429).
+- Migrasi `2026_10_16_000000`: `pos_sales.client_ref`. Dev DB disinkronkan (179 tabel / 21 migrasi) + backup/restore diverifikasi ulang (identik).
+- Test Phase6Test (3 test / 86 assertions) — hijau; suite penuh **39 passed / 319 assertions / 0 failed** (TEST_RESULTS.md).
+
 ## v0.4.1 — 2026-10-15
 - Read-only enforcement server-side: middleware `ReadOnlyRoles` menolak operasi tulis akun yang hanya berperan auditor/viewer (defense-in-depth; self-service logout/profil/2FA/konteks/notifikasi dikecualikan).
 - Reset password mandiri diuji penuh (forgot → notifikasi token → reset → hash baru; token salah ditolak).

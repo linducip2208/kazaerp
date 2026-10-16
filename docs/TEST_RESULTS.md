@@ -1,6 +1,16 @@
 # Test Results (dari run nyata — bukan klaim)
 
-## Suite penuh v0.4.1 — 2026-10-15 (MySQL `kazaerp_testing`)
+## Suite penuh v0.4.2 — 2026-10-16 (MySQL `kazaerp_testing`)
+- Perintah: `php artisan test`
+- Hasil: **39 passed, 0 failed, 0 skipped — 319 assertions** (durasi 1473,78s)
+- 36 test v0.1–v0.4.1 tetap hijau (regresi nihil) + 3 test Phase6Test baru (3 passed / 86 assertions, log `storage/logs/phase6_full.log`, durasi 100,37s):
+  - idempotensi checkout POS `client_ref`: 201 baru → 200 replay (`replayed: true`, id & nomor sama), stok tidak dobel (10 → 8 → 7), satu baris `pos_sales` per ref, retry tetap 200 walau shift sudah ditutup, ref berbeda → penjualan baru
+  - `kaza:audit-integrity`: kondisi bersih → exit 0 "AUDIT OK"; saldo stok digeser tanpa ledger + jurnal tidak balance (JN-RUSAK-1) + paid_total invoice tanpa pembayaran (INV-RUSAK-1) → exit 1 + detail temuan per kategori
+  - rate limit API: 60 request/menit OK, request ke-61 → 429 (throttle 60/menit per pengguna)
+- Uji operasional backup/restore ulang (dev DB pasca-migrasi, 16 Okt 2026): dump 26.126 bytes → restore ke DB scratch via `mysql` → **179 tabel / 21 migrasi / users=2 / products=1 identik dengan sumber**; scratch DB di-drop setelah verifikasi.
+- DB pengujian: MySQL (locking & constraints nyata). Log suite: `storage/logs/v042_full.log`.
+
+## Riwayat v0.4.1 (arsip) — 2026-10-15 (MySQL `kazaerp_testing`)
 - Perintah: `php artisan test`
 - Hasil: **36 passed, 0 failed, 0 skipped — 233 assertions** (durasi 1366,34s)
 - 32 test v0.1–v0.4.0 tetap hijau (regresi nihil) + 4 test Phase5Test baru:
