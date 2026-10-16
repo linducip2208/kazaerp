@@ -9,9 +9,13 @@
   4. Katalog: `GET /api/v1/pos/shift` + `GET /api/v1/products` (21:09:52–53); produk "Produk Demo" (DEMO-001, Rp 75.000) tampil.
   5. Keranjang 1 item → Tunai → `POST /api/v1/pos/checkout` (log 21:22:55) → snackbar app **"Tersimpan: MZA-HOLD/PST/POS/2026/10/00002"**.
   6. Verifikasi DB: `pos_sales` id=2 (number …00002, status `paid`, grand total 83.250 = 75.000 + PPN 11%, `shift_id=2`, `client_ref` dibuat app); `pos_sale_lines` id=2 (Produk Demo qty 1 @75.000); `stock_ledgers` id=4 (`pos_sale #2`, qty −1, 21:22:55) → saldo `stock_balances` product 1 = **6,0000** (10 − 2 invoice − 2 POS) — konsisten manual.
-  7. `php artisan kaza:audit-integrity` dengan data di atas: **AUDIT OK — 0 temuan** (saldo stok vs ledger, ledger yatim, balance jurnal, paid_total invoice).
-- Bukti lokal (`storage/logs/`, tidak di-commit): `serve8099b.out.log` (baris request login/shift/checkout), `flutter_build_apk3.log` (rebuild 89,0s), screenshot `emulator_3_login.png` … `emulator_20_submit.png` (snackbar "Tersimpan").
-- Catatan operasional emulator: instance lama (hidup 2 hari) ANR SystemUI → `screencap`/`adb install` menggantung; dilakukan cold boot ulang (`-no-window -gpu swiftshader_indirect`) dan navigasi diganti **3-button** agar tombol paling bawah app tidak tertutup zona gesture (kembalikan: `cmd overlay enable --user 0 com.android.internal.systemui.navbar.gestural`).
+  7. Tutup shift dari app (menu ⋮ → "Tutup shift", kas fisik 183.250) → `POST /api/v1/pos/shift/close` → dialog **"Shift ditutup"** (sistem 83.250 / seharusnya 183.250 / selisih 0); DB `pos_shifts` id=2 = `closed`, difference 0.
+  8. **Jalur offline-first dari APK**: server dimatikan → tambah produk → `Bayar & Simpan` → transaksi tersimpan ke antrean lokal (badge cloud = 1, halaman Antrean: **"1 menunggu"**, item `pos-1792167119343-…` + error "Server tidak merespons (timeout)").
+  9. **Auto-sync saat app dibuka**: server dinyalakan → force-stop + launch ulang → antrean tersinkron otomatis → `pos_sales` id=3 (**…/00003**, `paid`, 83.250, `shift_id=3`, `client_ref` = item antrean di atas), `stock_ledgers` id=5 (`pos_sale #3`, −1) → saldo = **5,0000** (10 − 2 − 3 ✓); badge antrean hilang.
+  10. `php artisan kaza:audit-integrity` dengan 3 sale + 3 shift (shift #3 ditutup via API, kas 133.250, selisih 0): **AUDIT OK — 0 temuan**.
+- Sertifikasi ulang pasca-fix: `flutter analyze` **0 issue**; `flutter test` **21 passed** (log `storage/logs/flutter_v052_verify.log`).
+- Bukti lokal (`storage/logs/`, tidak di-commit): `serve8099b.out.log` (baris request login/shift/checkout), `flutter_build_apk3.log` (rebuild 89,0s), screenshot `emulator_3_login.png` … `emulator_46_autosync.png` (snackbar "Tersimpan", dialog "Shift ditutup", halaman "Antrean Sinkron" 1 menunggu, badge cloud).
+- Catatan operasional emulator: instance lama (hidup 2 hari) ANR SystemUI → `screencap`/`adb install` menggantung; dilakukan cold boot ulang (`-no-window -gpu swiftshader_indirect`); navigasi sempat diganti **3-button** agar tombol paling bawah app tidak tertutup zona gesture, lalu **dikembalikan ke gestural** + `show_touches` dimatikan setelah verifikasi selesai.
 - APK rilis final (dengan fix): 47,7 MB, SHA256 `AC4797212E45AABC9050F151C5252170819930ACC211E2E00BACE4D730DDB267`.
 
 ## Mobile v0.5.1 (patch checkout + APK rilis) — 2026-10-16

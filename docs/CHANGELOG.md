@@ -3,6 +3,8 @@
 ## v0.5.2 — 2026-10-16
 - **Fix bug rilis**: permission `INTERNET` ditambahkan ke `AndroidManifest.xml` utama — APK rilis v0.5.1 tidak dapat memanggil API sama sekali (template Flutter hanya menaruh permission di manifest debug); `android:usesCleartextTraffic="true"` menyalakan HTTP untuk server dev (produksi tetap wajib HTTPS).
 - **Verifikasi end-to-end dari APK rilis di emulator Android** (bukan sekadar build): install → login (`POST /api/v1/login`, token Sanctum id=2) → buka shift kas 100.000 (`POST /api/v1/pos/shift/open`) → katalog dimuat (`GET /api/v1/products`) → keranjang → `POST /api/v1/pos/checkout` → penjualan **MZA-HOLD/PST/POS/2026/10/00002** (paid, total 83.250) + ledger stok `pos_sale #2` = −1; `kaza:audit-integrity` OK 0 temuan (rincian & screenshot: TEST_RESULTS.md).
+- **Siklus penuh + offline-first dari APK**: tutup shift #2 dari app (selisih 0); server dimatikan → checkout tersimpan ke antrean lokal ("1 menunggu"); server dinyalakan → restart app → auto-sync → penjualan **…/00003** + ledger `pos_sale #3`; shift #3 ditutup (selisih 0); audit OK 0 temuan.
+- Sertifikasi ulang pasca-fix: `flutter analyze` 0 issue; `flutter test` **21 passed** (log `storage/logs/flutter_v052_verify.log`).
 - APK rilis dengan fix: 47,7 MB, SHA256 `AC4797212E45AABC9050F151C5252170819930ACC211E2E00BACE4D730DDB267` (menggantikan hash v0.5.1).
 
 ## v0.5.1 — 2026-10-16
