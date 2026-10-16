@@ -48,6 +48,16 @@ flutter build apk --release --dart-define=API_BASE=https://erp.example.com/api/v
 
 Gunakan HTTPS di produksi (token bearer dikirim di header).
 
+Catatan build:
+
+- **Terverifikasi 16 Okt 2026**: APK rilis terbangun → `build/app/outputs/flutter-apk/app-release.apk`
+  (47,7 MB, SHA256 `2FC0CA8D…FB483D3`, log `storage/logs/flutter_build_apk2.log`).
+  Sekali per mesin build: `flutter doctor --android-licenses` (butuh diterima).
+- APK rilis memakai **debug signing** (default template, lihat `android/app/build.gradle.kts`) —
+  untuk distribusi produksi siapkan keystore rilis + `signingConfigs` sendiri.
+- Windows beda drive (pub cache `C:`, project `D:`): `kotlin.incremental=false` sudah diset di
+  `android/gradle.properties` agar tidak muncul error cache Kotlin "different roots".
+
 ## Uji
 
 ```bash

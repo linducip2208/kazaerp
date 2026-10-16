@@ -1,5 +1,11 @@
 # Changelog
 
+## v0.5.1 — 2026-10-16
+- POS mobile diperkuat: tombol **Bayar & Simpan** anti double-tap (tidak bisa mem-pop dua kali) dan alur keranjang memakai guard `_cartFlowBusy` dengan `try/finally` — tidak mungkin terkunci bila terjadi error tak terduga.
+- **APK rilis Android terbangun pertama kali** di mesin ini: `flutter build apk --release` → `build/app/outputs/flutter-apk/app-release.apk` (47,7 MB, SHA256 `2FC0CA8DCC952F1F79924DD391887A5B47A6A2260E4BEAFA1D001FAE5FB483D3`); Android SDK licenses diterima; rantai bukti source final 15:01 → AOT 15:03 → APK 15:06, rebuild bersih 19,6s dengan hash identik.
+- `kotlin.incremental=false` di `android/gradle.properties`: workaround cache Kotlin Windows lintas-drive (pub cache `C:` vs project `D:`) yang memicu stack trace non-fatal saat build.
+- Verifikasi ulang pasca-patch: `flutter analyze` 0 issue; `flutter test` **21 passed** (log `storage/logs/flutter_v051_verify.log`).
+
 ## v0.5.0 — 2026-10-16
 - Aplikasi POS mobile offline-first (Flutter 3.41, `mobile/pos_kaza`): login Sanctum, katalog produk + harga tier pelanggan dengan cache lokal (tetap terlihat saat offline), shift kasir buka/tutup + ringkasan selisih, keranjang → antrean lokal SharedPreferences → sinkron ke API `/api/v1` dengan `client_ref` unik (replay 200 `replayed: true` dianggap sukses), halaman Antrean Sinkron (pending/tersinkron/ditolak + kirim ulang), auto-sync saat aplikasi dibuka, alamat server dapat diisi & tersimpan.
 - Uji klien: `flutter analyze` 0 issue; `flutter test` **21 passed** (klien API: login/401/checkout replay/parsing/error jaringan; model & keranjang; repository antrean offline; widget login); `flutter build web --release` sukses.

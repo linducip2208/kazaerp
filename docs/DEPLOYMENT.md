@@ -8,4 +8,4 @@
 - Permission file: `storage bootstrap/cache` writable; cron scheduler tiap menit; queue worker bila dipakai (`queue:work --daemon` + supervisor).
 - Backup: dump MySQL harian + `storage/app/private`; uji restore berkala (lihat OPERATIONS_RUNBOOK).
 - Rollback: `php artisan migrate:rollback --step=N` + restore backup; catat di CHANGELOG.
-- Aplikasi POS mobile (Flutter, `mobile/pos_kaza`): `flutter build apk --release --dart-define=API_BASE=https://erp.example.com/api/v1` (sekali per mesin build: `flutter doctor --android-licenses`). Alamat server juga bisa diisi di layar login. Wajib HTTPS (token bearer).
+- Aplikasi POS mobile (Flutter, `mobile/pos_kaza`): `flutter build apk --release --dart-define=API_BASE=https://erp.example.com/api/v1` (sekali per mesin build: `flutter doctor --android-licenses` — sudah diterima & APK terverifikasi terbangun 16 Okt 2026, 47,7 MB). Alamat server juga bisa diisi di layar login. Wajib HTTPS (token bearer).

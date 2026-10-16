@@ -42,6 +42,7 @@ class _PosScreenState extends State<PosScreen> {
   bool _loading = true;
   bool _offline = false;
   bool _sessionExpired = false;
+  bool _cartFlowBusy = false;
   String? _notice;
   int _pending = 0;
 
@@ -206,16 +207,21 @@ class _PosScreenState extends State<PosScreen> {
   }
 
   Future<void> _openCart() async {
-    if (_cart.isEmpty) return;
-    await _loadCustomers();
-    if (!mounted) return;
-    final intent = await showModalBottomSheet<_CheckoutIntent>(
-      context: context,
-      isScrollControlled: true,
-      builder: (ctx) => _CartSheet(cart: _cart, customers: _customers),
-    );
-    if (intent == null || !mounted) return;
-    await _doCheckout(intent);
+    if (_cart.isEmpty || _cartFlowBusy) return;
+    _cartFlowBusy = true;
+    try {
+      await _loadCustomers();
+      if (!mounted) return;
+      final intent = await showModalBottomSheet<_CheckoutIntent>(
+        context: context,
+        isScrollControlled: true,
+        builder: (ctx) => _CartSheet(cart: _cart, customers: _customers),
+      );
+      if (intent == null || !mounted) return;
+      await _doCheckout(intent);
+    } finally {
+      _cartFlowBusy = false;
+    }
   }
 
   Future<void> _doCheckout(_CheckoutIntent intent) async {
@@ -385,6 +391,7 @@ class _CartSheet extends StatefulWidget {
 class _CartSheetState extends State<_CartSheet> {
   String _payMethod = 'cash';
   int? _customerId;
+  bool _submitted = false;
 
   @override
   Widget build(BuildContext context) {
@@ -445,7 +452,12 @@ class _CartSheetState extends State<_CartSheet> {
                 children: [
                   Expanded(child: Text('Total: ${formatIdr(widget.cart.subtotal)}', style: const TextStyle(fontWeight: FontWeight.bold))),
                   FilledButton(
-                    onPressed: () => Navigator.pop(context, _CheckoutIntent(_payMethod, _customerId)),
+                    onPressed: _submitted
+                        ? null
+                        : () {
+                            setState(() => _submitted = true);
+                            Navigator.pop(context, _CheckoutIntent(_payMethod, _customerId));
+                          },
                     child: const Text('Bayar & Simpan'),
                   ),
                 ],

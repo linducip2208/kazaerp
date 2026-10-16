@@ -1,5 +1,12 @@
 # Test Results (dari run nyata — bukan klaim)
 
+## Mobile v0.5.1 (patch checkout + APK rilis) — 2026-10-16
+- Patch POS (anti double-tap + guard `try/finally` alur keranjang): `flutter analyze` **0 issue**; `flutter test` **21 passed** (log `storage/logs/flutter_v051_verify.log`).
+- `php artisan kaza:audit-integrity` di DB dev (berisi hasil smoke live POS): **AUDIT OK, 0 temuan** — saldo stok, jurnal, dan pembayaran invoice konsisten.
+- Build APK rilis pertama (Android SDK licenses diterima): `flutter build apk --release` → `build/app/outputs/flutter-apk/app-release.apk` **47,7 MB**, SHA256 `2FC0CA8DCC952F1F79924DD391887A5B47A6A2260E4BEAFA1D001FAE5FB483D3` (log `flutter_build_apk2.log`).
+  - Rantai bukti artefak: source final ditulis 15:01:48 → AOT `libapp.so` 15:03:18 → APK 15:06:09; rebuild 19,6s menghasilkan hash **identik** (repackage deterministik dari input yang sama).
+  - Build pertama (`flutter_build_apk.log`) sukses dengan warning non-fatal Kotlin daemon (cross-drive `C:`/`D:`) → diatasi lewat `kotlin.incremental=false`.
+
 ## Suite penuh v0.4.3 + mobile v0.5.0 — 2026-10-16 (MySQL `kazaerp_testing`)
 - Perintah: `php artisan test` — log `storage/logs/v043_full4.log`
 - Hasil: **42 passed, 0 failed, 0 skipped — 347 assertions** (durasi 1611,24s)
