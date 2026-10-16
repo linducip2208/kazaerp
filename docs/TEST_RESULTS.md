@@ -1,5 +1,15 @@
 # Test Results (dari run nyata — bukan klaim)
 
+## Suite penuh v0.4.3 + mobile v0.5.0 — 2026-10-16 (MySQL `kazaerp_testing`)
+- Perintah: `php artisan test` — log `storage/logs/v043_full4.log`
+- Hasil: **42 passed, 0 failed, 0 skipped — 347 assertions** (durasi 1611,24s)
+- 39 test v0.1–v0.4.2 tetap hijau (regresi nihil) + 3 test baru:
+  - Phase7Test (2 passed / 25 assertions, log `phase7_rerun2.log`): `kaza:admin-create` (buat → hash bcrypt terverifikasi + role super_admin; run ulang → update tanpa duplikat; password < 12 & email invalid → exit 1 tanpa user baru) dan alert kedaluwarsa (seleksi kandidat ≤ 30/60 hari via queue fake; `--sync` membuat notifikasi hanya untuk batch berstok; batch tanpa stok & di luar ambang tidak dinotifikasi; run ulang idempoten 24 jam; guard `StockService` memblokir pengeluaran dari batch kedaluwarsa — diuji eksplisit sebagai aturan bisnis).
+  - SmokePagesTest (1 passed): 70 halaman menu utama super_admin → semua HTTP 200.
+- Mobile (`mobile/pos_kaza`): `flutter analyze` 0 issue; `flutter test` **21 passed** (log `flutter_test2.log`: klien API + model/keranjang + repository antrean offline + widget login); `flutter build web --release` sukses (`build/web`, log `flutter_build_web.log`).
+- Smoke live klien Dart → server dev 8099 (log `flutter_live_smoke.log`): login OK → 1 produk + 1 pelanggan → buka shift id=1 kas 100.000 → checkout `MZA-HOLD/PST/POS/2026/10/00001` total 83.250 (`replayed=false`) → kirim ulang `client_ref` sama → **200 `replayed=true`, nomor sama, tanpa efek dobel** → tutup shift (sistem=83.250, kas seharusnya=183.250, selisih=0).
+- Catatan insiden (transparansi): 3 log percobaan sebelumnya tidak dipakai — `v043_full.log` (run duplikat tak sengaja, langsung dihentikan → state DB test kacau), `v043_full2.log` (MySQL di-SHUTDOWN eksternal 2× di tengah run → `Connection refused` massal), `v043_full3.log` (proses mati saat mesin idle). Run final di atas dijalankan setelah lingkungan dipastikan bersih dan MySQL stabil.
+
 ## Suite penuh v0.4.2 — 2026-10-16 (MySQL `kazaerp_testing`)
 - Perintah: `php artisan test`
 - Hasil: **39 passed, 0 failed, 0 skipped — 319 assertions** (durasi 1473,78s)

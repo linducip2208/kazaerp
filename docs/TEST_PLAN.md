@@ -19,5 +19,10 @@
 - Phase6 (`tests/Feature/Phase6Test.php`): idempotensi checkout POS via `client_ref` (201 baru → 200 replay, id/no sama, stok tidak dobel, retry tetap aman setelah shift ditutup; ref berbeda → penjualan baru);
   `kaza:audit-integrity` (kondisi bersih → exit 0; kerusakan saldo stok/jurnal/invoice terdeteksi → exit 1 + nomor dokumen);
   rate limit API (60 request/menit OK, ke-61 → 429).
+- Phase7 (`tests/Feature/Phase7Test.php`): `kaza:admin-create` (buat + idempoten per email + validasi password/email);
+  expiry alerts (dispatch queue 2 kandidat ≤30 hari, sync → notifikasi hanya batch berstok, idempoten 24 jam, threshold `--days=60` menangkap batch jauh, stok habis → tidak ada alert).
+- Smoke otomatis (`tests/Feature/SmokePagesTest.php`): 70 halaman menu utama semua 200 untuk super_admin (menggantikan smoke manual).
+- Mobile (`mobile/pos_kaza`, `flutter test`): 21 test — API client (login sukses/401/checkout replay/parse tier/jaringan mati/non-JSON), model & keranjang, repository antrean (persist lintas instance, sukses 201, replay 200, jaringan mati → antrean utuh, 422 → rejected → retry sukses, submitNew simpan-dulu). Plus `flutter analyze` (0 issue) + `flutter build web --release` (bukti kompilasi).
+- Smoke kontrak live (`dart run tool/api_smoke.dart ... --checkout`, server dev 8099, 16 Okt 2026): login → katalog → buka shift (kas 100.000) → checkout `MZA-HOLD/PST/POS/2026/10/00001` total 83.250 → kirim ulang `client_ref` sama → **200 `replayed: true`, nomor & id sama** → tutup shift (sistem 83.250, selisih 0). Bukti end-to-end idempotensi dari kode klien asli (log `storage/logs/flutter_live_smoke.log`).
 - Acceptance: checklist + smoke HTTP 22 halaman (login, CRUD, POS, laporan) — bukti di TEST_RESULTS.md.
 - Regresi: full `php artisan test` tiap perubahan; static: `php -l` per file + `composer validate`.

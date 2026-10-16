@@ -62,4 +62,9 @@
 | F-API-05 | Checkout POS idempoten via `client_ref` (sync offline aman) | P1 | DONE | PosService, Api\PosController, Phase6Test |
 | F-OPS-04 | Command `kaza:audit-integrity` (stok/jurnal/invoice) | P2 | DONE | AuditIntegrity, Phase6Test |
 | F-SEC-03 | Rate limit API 60 req/menit per user (429) | P2 | DONE | routes/api.php, Phase6Test |
+| F-OPS-05 | Alert batch kedaluwarsa (job + scheduler 08:30) | P2 | DONE | SendBatchExpiryAlert, kaza:expiry-alerts, Phase7Test |
+| F-OPS-06 | Command `kaza:admin-create` (admin produksi interaktif) | P2 | DONE | AdminCreate, Phase7Test |
+| F-QA-01 | Smoke otomatis seluruh menu (60+ halaman 200) | P1 | DONE | SmokePagesTest |
+| F-MOB-01 | POS mobile offline-first (cache katalog + antrean + retry idempoten `client_ref`) | P1 | DONE | mobile/pos_kaza, flutter test 21/21 |
+| F-MOB-02 | Shift kasir dari mobile (buka/tutup + ringkasan selisih) | P1 | DONE | lib/screens/pos_screen.dart, lib/api_client.dart |
 | F-DELTA-01 | Eliminasi intercompany otomatis (menunggu kebijakan) | P3 | PENDING | DECISIONS #4 |

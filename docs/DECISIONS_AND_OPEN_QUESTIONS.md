@@ -19,3 +19,4 @@
 10. QC/karantina: status default lot GRN (saat ini `released`) & SLA karantina — disarankan `pending` bila QC ketat wajib.
 11. Perlakuan akuntansi variance produksi (jurnal variance menunggu metode HPP diputuskan).
 12. GPS produksi: provider/perangkat pelacak (arsitektur push API siap; saat ini pengiriman manual dari perangkat driver).
+13. Alert kedaluwarsa batch: ambang default 30 hari ke depan + jadwal harian 08:30 + penerima permission `inventory.view` (command `kaza:expiry-alerts --days=N` dapat diubah tanpa deploy) — sesuaikan bila kebijakan FEFO/retur vendor berbeda.

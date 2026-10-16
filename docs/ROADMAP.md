@@ -12,6 +12,8 @@
   - ✅ Queue worker nyata: `kaza:overdue-alerts` + job (scheduler 08:00, idempoten).
   - ✅ Hardening v0.4.1: read-only auditor/viewer server-side, reset password diuji penuh, backup+restore terverifikasi (dump → scratch → identik).
   - ✅ v0.4.2: checkout POS idempoten (`client_ref`) untuk sync offline, command `kaza:audit-integrity`, rate limit API 60 req/menit.
+  - ✅ v0.4.3: `kaza:admin-create` (admin produksi interaktif), alert batch kedaluwarsa (`kaza:expiry-alerts`, scheduler 08:30), smoke otomatis 70 halaman (`SmokePagesTest`).
+  - ✅ v0.5.0: aplikasi POS mobile offline-first (Flutter `mobile/pos_kaza`) — antrean lokal + retry idempoten `client_ref`, shift kasir; flutter test 21/21 + smoke live replay 200.
   - ⏳ Sinkronisasi marketplace adapter nyata — menunggu kredensial/pilihan vendor.
   - ⏳ GPS vendor produksi (server-side provider) — arsitektur sudah siap menerima.
 - v1.0: UAT + hardening produksi (2FA, header, backup teruji) + go-live bertahap per entitas.

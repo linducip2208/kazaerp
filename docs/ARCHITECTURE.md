@@ -22,8 +22,11 @@ Alasan alternatif vs `app/Modules/...`: mengikuti konvensi Laravel (autoload `Ap
 - Error: RuntimeException bisnis → `back()->withErrors(['msg'])`, bukan 500.
 
 ## Events/jobs
-Job nyata: `App\Jobs\SendOverdueInvoiceAlert` — dispatch lewat command `kaza:overdue-alerts` (scheduler harian 08:00 di `routes/console.php`; idempoten 24 jam per notifikasi). Produksi: jalankan `php artisan queue:work` (supervisor); dev bisa `kaza:overdue-alerts --sync`. Notifikasi via `NotifyService` (bell + halaman).
+Job nyata: `App\Jobs\SendOverdueInvoiceAlert` — dispatch lewat command `kaza:overdue-alerts` (scheduler harian 08:00 di `routes/console.php`; idempoten 24 jam per notifikasi). Produksi: jalankan `php artisan queue:work` (supervisor); dev bisa `kaza:overdue-alerts --sync`. Notifikasi via `NotifyService` (bell + halaman). Job kedua: `App\Jobs\SendBatchExpiryAlert` — `kaza:expiry-alerts` (scheduler 08:30; hanya batch berstok, ambang `--days=30`).
 Audit integritas data: `php artisan kaza:audit-integrity` — verifikasi saldo stok vs ledger, ledger yatim, balance jurnal, dan paid_total invoice vs pembayaran; exit code 1 bila ada temuan.
+
+## Aplikasi POS Mobile (`mobile/pos_kaza`)
+Flutter 3.41 (Material 3) di folder `mobile/pos_kaza` (repo sama). Offline-first: keranjang → antrean lokal SharedPreferences (status `pending`/`synced`/`rejected`) → sinkron ke `/api/v1` dengan `client_ref` unik per penjualan (retry aman; replay 200 dianggap sukses). Layer: `lib/api_client.dart` (HTTP + bedakan error jaringan vs 4xx), `lib/local_store.dart` (token/cache katalog/antrean), `lib/pos_repository.dart` (orkestrasi sinkron), `lib/screens/*` (login, POS + shift, antrean). Uji: `flutter analyze` + `flutter test` (HTTP & SharedPreferences di-mock); smoke kontrak nyata: `dart run tool/api_smoke.dart <base-url> <email> <password> [--checkout]`.
 
 ## Authorization
 `perm:<nama>` di route + `hasPermission()` (super_admin bypass) + scope entity di `CrudController::baseQuery()` + `inScope()` untuk context switch. UI hanya menyembunyikan menu; keputusan selalu di server.

@@ -1,5 +1,17 @@
 # Changelog
 
+## v0.5.0 — 2026-10-16
+- Aplikasi POS mobile offline-first (Flutter 3.41, `mobile/pos_kaza`): login Sanctum, katalog produk + harga tier pelanggan dengan cache lokal (tetap terlihat saat offline), shift kasir buka/tutup + ringkasan selisih, keranjang → antrean lokal SharedPreferences → sinkron ke API `/api/v1` dengan `client_ref` unik (replay 200 `replayed: true` dianggap sukses), halaman Antrean Sinkron (pending/tersinkron/ditolak + kirim ulang), auto-sync saat aplikasi dibuka, alamat server dapat diisi & tersimpan.
+- Uji klien: `flutter analyze` 0 issue; `flutter test` **21 passed** (klien API: login/401/checkout replay/parsing/error jaringan; model & keranjang; repository antrean offline; widget login); `flutter build web --release` sukses.
+- Smoke live end-to-end memakai kode klien asli ke server dev: login → buka shift (kas 100.000) → checkout `MZA-HOLD/PST/POS/2026/10/00001` total 83.250 → kirim ulang `client_ref` sama → **200 `replayed: true`, nomor & id sama** → tutup shift (sistem 83.250, selisih 0) — log `storage/logs/flutter_live_smoke.log`.
+- Dokumentasi: ARCHITECTURE (bagian mobile), FEATURES (F-MOB-01/02), DEPLOYMENT (build APK + `--dart-define=API_BASE`), TEST_PLAN, ACCEPTANCE_CHECKLIST + README `mobile/pos_kaza`.
+
+## v0.4.3 — 2026-10-16
+- Command `php artisan kaza:admin-create`: membuat/memperbarui admin produksi — idempoten per email, validasi password min 12 karakter, role `super_admin` + konteks default; menutup catatan seeder produksi di DEPLOYMENT.
+- Alert kedaluwarsa batch: `php artisan kaza:expiry-alerts {--days=30} {--sync}` + job `SendBatchExpiryAlert` per batch (hanya batch dengan sisa stok > 0; dedupe 24 jam; link `/inventory/batches`; penerima permission `inventory.view`); scheduler harian 08:30 setelah `kaza:overdue-alerts` 08:00. Ambang default 30 hari dicatat sebagai PENDING_BUSINESS_DECISION.
+- Smoke otomatis 70 halaman menu utama (`tests/Feature/SmokePagesTest.php`) — semua HTTP 200 (menggantikan smoke manual).
+- Test: Phase7Test 2 passed / 25 assertions; suite penuh **42 passed / 347 assertions / 0 failed** (durasi 1611,24s; log `storage/logs/v043_full4.log`).
+
 ## v0.4.2 — 2026-10-16
 - Checkout POS idempoten via `client_ref` (unique per entitas): retry mobile/offline mengembalikan penjualan yang sama (200 `replayed: true`) tanpa dobel stok/jurnal — tetap aman walau shift sudah ditutup; balapan dua request ditutup unique index.
 - Command baru `php artisan kaza:audit-integrity`: audit saldo stok vs ledger, ledger yatim, balance jurnal (termasuk header vs baris), paid_total invoice vs pembayaran; exit code 1 bila ada temuan (cocok untuk cron/monitoring).

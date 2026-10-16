@@ -24,6 +24,11 @@
 - [x] POS API idempoten (`client_ref`) — retry sync offline aman (test)
 - [x] Command audit integritas `kaza:audit-integrity` (test)
 - [x] Rate limit API 60/menit per user (test)
+- [x] Alert batch kedaluwarsa via queue + scheduler (test)
+- [x] Command pembuatan admin produksi `kaza:admin-create` (test)
+- [x] Smoke otomatis 60+ halaman menu (test)
+- [x] POS mobile offline-first: antrean lokal + retry idempoten `client_ref` (flutter test)
+- [x] Shift kasir dapat dibuka/ditutup dari aplikasi mobile (flutter test + smoke live)
 - [ ] UAT tanda tangan owner & Finance (PENDING)
 
 ## Keamanan/Data/Deploy/Go-live
