@@ -1,5 +1,11 @@
 # Changelog
 
+## v0.5.4 — 2026-10-17 (audit finalisasi backend)
+- 7 perbaikan keamanan/integritas: `injectContext` branch/`created_by` (P0); scoping daftar file privat, guard entitas lead-convert, reservasi hantu SO-approve (P1); netralisasi formula-injection CSV, hardening impor CSV (header/batas/audit), privasi daftar delegasi (P2).
+- Tes regresi baru `tests/Feature/Phase8Test.php`: **6 passed / 17 assertions** (MySQL `kazaerp_testing`); regresi Isolation+BusinessRules+SalesFlow 8/28 + SmokePages 70 halaman hijau.
+- Docs: `FINALIZATION_AUDIT.md` baru; `TEST_RESULTS.md`, `IMPLEMENTATION_STATUS.md`, `DECISIONS_AND_OPEN_QUESTIONS.md` (butir 14–15: waktu Jakarta vs UTC, password backup) diperbarui.
+- Tidak ada push/merge/deploy; commit lokal sebelumnya dipertahankan.
+
 ## v0.5.3 — 2026-10-17
 - Layar auth dirombak ke **split-screen landscape** ala house-style (panel brand gradient + poin fitur + form): layout baru `layouts/auth.blade.php` dipakai login/lupa/reset/2FA challenge; tombol gradient, tanpa dependensi/CDN baru (Tabler + CSS sendiri via `npm run build` → `public/build`, CSS 837 KB).
 - Fix: halaman error 403/404/500 kini memakai layout mandiri — sebelumnya extends `layouts.tabler` yang butuh login, sehingga tamu yang kena 404 malah mendapat 500.

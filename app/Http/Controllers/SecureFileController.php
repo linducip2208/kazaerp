@@ -65,7 +65,56 @@ class SecureFileController extends Controller
 
     public function index()
     {
-        $rows = DB::table('attachments')->orderByDesc('id')->paginate(20);
+        $u = auth()->user();
+        $q = DB::table('attachments')->orderByDesc('id');
+        if (! $u->hasRole('super_admin', 'holding_owner', 'executive', 'auditor')) {
+            // Non-privileged: hanya lampiran yang dapat diakses user ini
+            // (file karyawan milik sendiri + file pelanggan dalam entitas/cakupan user).
+            $eids = array_unique(array_merge([$u->legal_entity_id], $u->scopeIds('legal_entity')));
+            $eids = array_values(array_filter($eids));
+            $custIds = $eids
+                ? DB::table('customers')->whereIn('legal_entity_id', $eids)->pluck('id')->all()
+                : [];
+            $ownerIds = DB::table('employees')->where('user_id', $u->id)->pluck('id')->all();
+            $petOwnerIds = $custIds
+                ? DB::table('pet_owners')->whereIn('customer_id', $custIds)->pluck('id')->all()
+                : [];
+            $studioIds = $custIds
+                ? DB::table('studio_projects')->whereIn('customer_id', $custIds)->pluck('id')->all()
+                : [];
+            $q->where(function ($w) use ($custIds, $ownerIds, $petOwnerIds, $studioIds) {
+                $w->where(function ($x) use ($ownerIds) {
+                    $x->where('owner_type', 'like', '%Employee%');
+                    if ($ownerIds) {
+                        $x->whereIn('owner_id', $ownerIds);
+                    } else {
+                        $x->whereRaw('1 = 0');
+                    }
+                })->orWhere(function ($x) use ($custIds) {
+                    $x->where('owner_type', 'like', '%Customer%');
+                    if ($custIds) {
+                        $x->whereIn('owner_id', $custIds);
+                    } else {
+                        $x->whereRaw('1 = 0');
+                    }
+                })->orWhere(function ($x) use ($petOwnerIds) {
+                    $x->where('owner_type', 'like', '%PetOwner%');
+                    if ($petOwnerIds) {
+                        $x->whereIn('owner_id', $petOwnerIds);
+                    } else {
+                        $x->whereRaw('1 = 0');
+                    }
+                })->orWhere(function ($x) use ($studioIds) {
+                    $x->where('owner_type', 'like', '%Studio%');
+                    if ($studioIds) {
+                        $x->whereIn('owner_id', $studioIds);
+                    } else {
+                        $x->whereRaw('1 = 0');
+                    }
+                });
+            });
+        }
+        $rows = $q->paginate(20);
 
         return view('modules.files.index', compact('rows'));
     }

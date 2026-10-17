@@ -102,10 +102,10 @@ abstract class CrudController extends Controller {
         if ($this->entityField && empty($v[$this->entityField]) && in_array($this->entityField,(new ($this->model))->getFillable())) {
             $v[$this->entityField] = $ctx['legal_entity_id'] ?? $u->legal_entity_id;
         }
-        if ($this->branchField && array_key_exists($this->branchField,(new ($this->model))->getFillable()) && empty($v[$this->branchField])) {
+        if ($this->branchField && in_array($this->branchField, (new ($this->model))->getFillable(), true) && empty($v[$this->branchField])) {
             $v[$this->branchField] = $ctx['branch_id'] ?? $u->branch_id;
         }
-        if (array_key_exists('created_by',(new ($this->model))->getFillable()) && empty($v['created_by'])) $v['created_by'] = $u->id;
+        if (in_array('created_by', (new ($this->model))->getFillable(), true) && empty($v['created_by'])) { $v['created_by'] = $u->id; }
     }
     protected function guardPosted($row): void {
         if (($row->status ?? null)==='posted') abort(422,'Dokumen posted tidak dapat diubah. Gunakan reversal/koreksi.');

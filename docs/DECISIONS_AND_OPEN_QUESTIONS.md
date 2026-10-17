@@ -20,3 +20,5 @@
 11. Perlakuan akuntansi variance produksi (jurnal variance menunggu metode HPP diputuskan).
 12. GPS produksi: provider/perangkat pelacak (arsitektur push API siap; saat ini pengiriman manual dari perangkat driver).
 13. Alert kedaluwarsa batch: ambang default 30 hari ke depan + jadwal harian 08:30 + penerima permission `inventory.view` (command `kaza:expiry-alerts --days=N` dapat diubah tanpa deploy) — sesuaikan bila kebijakan FEFO/retur vendor berbeda.
+14. Penyimpanan waktu: `APP_TIMEZONE=Asia/Jakarta` dan `now()` menghasilkan waktu Jakarta yang disimpan apa adanya; klaim "DB UTC" di config belum menjadi migrasi nyata. Tampilan via `tgl_id()` konsisten (tidak ada double conversion), tetapi migrasi penyimpanan ke UTC tetap menunggu keputusan (jangan diubah massal sebelum disetujui + rencana migrasi data).
+15. `kaza:backup` meneruskan password DB via argumen proses `mysqldump` (terlihat di daftar proses server). Residual risk diterima sementara untuk server tertutup; bila backup dijalankan di host bersama, putuskan antara file konfigurasi MySQL khusus atau user DB khusus backup.

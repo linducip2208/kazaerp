@@ -14,8 +14,9 @@ class ReportController extends Controller {
             ->when($r->from,fn($q)=>$q->where('date','>=',$r->from))->when($r->to,fn($q)=>$q->where('date','<=',$r->to))
             ->selectRaw('SUM(grand_total) t, SUM(paid_total) p')->first();
         if ($r->get('export')==='csv') {
+            $esc = fn($v) => str_starts_with((string)$v, '=') || str_starts_with((string)$v, '+') || str_starts_with((string)$v, '-') || str_starts_with((string)$v, '@') ? "'".$v : $v;
             $csv="nomor,tanggal,pelanggan,total,bayar,status\n";
-            foreach ($rows->items() as $x) $csv .= "\"{$x->number}\",{$x->date},\"{$x->customer}\",{$x->grand_total},{$x->paid_total},{$x->pay_status}\n";
+            foreach ($rows->items() as $x) $csv .= "\"".$esc($x->number)."\",".$x->date.",\"".$esc($x->customer)."\",".$x->grand_total.",".$x->paid_total.",".$x->pay_status."\n";
             return response($csv,200,['Content-Type'=>'text/csv','Content-Disposition'=>'attachment; filename="penjualan.csv"']);
         }
         return view('modules.reports.sales', compact('rows','sum'));

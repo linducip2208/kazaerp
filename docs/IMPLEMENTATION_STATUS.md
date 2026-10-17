@@ -1,4 +1,4 @@
-# Implementation Status (per 16 Okt 2026 — v0.5.2)
+# Implementation Status (per 17 Okt 2026 — v0.5.4 audit finalisasi)
 
 ## Selesai (DONE, bukti run nyata)
 - Foundation: Laravel 11.57 + PHP 8.3.30 + MySQL 8.4.9; 179 tabel; migrate:fresh hijau; seed hijau.
@@ -10,6 +10,7 @@
 - v0.4.0 baru: harga tier otomatis (web+API+POS), QC/karantina batch + guard stok keluar, MFG issue→produce + variance biaya, komisi penjualan (akrual + approve), GPS transport (push posisi + tracking web), queue worker nyata (`kaza:overdue-alerts`).
 - Smoke otomatis: 70 halaman menu utama → semua 200 (`tests/Feature/SmokePagesTest.php`); smoke live API POS dari klien Dart (`mobile/pos_kaza/tool/api_smoke.dart`) termasuk replay idempoten. E2E: GRN→SO→invoice→jurnal→paid (DB diverifikasi).
 - Test: suite penuh MySQL **42 passed / 347 assertions / 0 failed** (lihat TEST_RESULTS.md, log `v043_full4.log`); rincian Phase4 6/85 (`phase4_final.log`), Phase5 4/29 (`v041_full.log`), Phase6 3/86 (`phase6_full.log`), Phase7 2/25 (`phase7_rerun2.log`), SmokePages 70 halaman.
+- Audit finalisasi v0.5.4 (17 Okt 2026): 7 perbaikan (injectContext branch/created_by P0; scoping file privat, lead convert, reservasi hantu P1; CSV injection, impor, privasi delegasi P2) + `tests/Feature/Phase8Test.php` **6 passed / 17 assertions**; regresi Isolation+BusinessRules+SalesFlow 8/28 + SmokePages 1/3 hijau.
 - Hardening v0.4.1: read-only auditor/viewer ditegakkan server-side (middleware `ReadOnlyRoles`), reset password mandiri diuji penuh, backup+restore terverifikasi (dump → DB scratch → identik), job queue diverifikasi diproses `queue:work` — bukti `tests/Feature/Phase5Test.php` + TEST_RESULTS.md.
 - v0.4.2 baru: checkout POS idempoten via `client_ref` (retry sync offline aman — fondasi POS mobile), command `kaza:audit-integrity` (saldo stok vs ledger, ledger yatim, balance jurnal, paid_total invoice vs pembayaran; exit 1 saat ada temuan), rate limit API 60 req/menit per user; migrasi dev DB disinkronkan (179 tabel / 21 migrasi, backup+restore ulang terverifikasi).
 - v0.4.3 baru: `kaza:admin-create` (admin produksi idempoten per email), alert kedaluwarsa batch (`kaza:expiry-alerts` + job `SendBatchExpiryAlert`, scheduler harian 08:30, dedupe 24 jam, hanya batch berstok), smoke otomatis 70 halaman menu (semua 200).

@@ -10,13 +10,23 @@ class DelegationController extends Controller
 {
     public function index()
     {
-        $rows = DB::table('approval_delegations')
+        $me = auth()->user();
+        $q = DB::table('approval_delegations')
             ->join('users as a', 'a.id', '=', 'approval_delegations.delegator_id')
             ->join('users as b', 'b.id', '=', 'approval_delegations.delegate_id')
             ->select('approval_delegations.*', 'a.name as delegator', 'b.name as delegate')
-            ->orderByDesc('approval_delegations.id')->paginate(15);
+            ->orderByDesc('approval_delegations.id');
+        if (! $me->hasPermission('roles.assign')) {
+            $q->where(function ($w) use ($me) {
+                $w->where('approval_delegations.delegator_id', $me->id)
+                    ->orWhere('approval_delegations.delegate_id', $me->id);
+            });
+        }
+        $rows = $q->paginate(15);
 
-        $users = \App\Models\User::where('is_active', true)->orderBy('name')->get();
+        $users = $me->hasPermission('roles.assign')
+            ? \App\Models\User::where('is_active', true)->orderBy('name')->get()
+            : \App\Models\User::where('is_active', true)->where('id', $me->id)->orderBy('name')->get();
 
         return view('modules.gov.delegations.index', compact('rows', 'users'));
     }

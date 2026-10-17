@@ -1,5 +1,20 @@
 # Test Results (dari run nyata — bukan klaim)
 
+## Audit finalisasi v0.5.4 (7 perbaikan P0/P1/P2 + Phase8Test) — 2026-10-17
+- Perintah: `php artisan test --filter Phase8Test` (MySQL `kazaerp_testing`, migrate:fresh per test)
+- Hasil: **6 passed, 0 failed — 17 assertions** (durasi 194,67s)
+- Perbaikan yang dibuktikan tes:
+  1. `CrudController::injectContext` (P0): `array_key_exists` pada daftar fillable (selalu salah + TypeError untuk branch/created_by) → `in_array(..., true)`; branch & `created_by` kini terisi.
+  2. `SecureFileController::index` (P1): daftar lampiran kini difilter per cakupan user (non-privileged hanya file karyawan sendiri + pelanggan/pet/studio dalam entitasnya); download memang sudah terotorisasi.
+  3. Lead convert (P1 IDOR): closure `crm.leads.convert` kini abort 404 bila lead di luar entitas/cakupan user.
+  4. `SalesOrder::approve` (P1): baris `stock_reservations` aktif hanya dibuat bila `StockService::reserve` sukses — tidak ada lagi reservasi hantu saat stok kurang (ledger `qty_reserved` konsisten).
+  5. Impor CSV (P2): validasi header wajib, batas 2000 baris/file, validasi email, cek jumlah kolom, audit log `import`.
+  6. Ekspor CSV penjualan (P2): sel diawali `=,+,-,@` dinetralkan dengan prefix `'` (anti formula injection).
+  7. `DelegationController::index` (P2 privasi): tanpa `roles.assign` hanya melihat delegasi yang melibatkan diri sendiri; daftar user dibatasi ke diri sendiri.
+- Regresi terkait: `--filter "IsolationTest|BusinessRulesTest|SalesFlowTest"` → **8 passed (28 assertions)**, 255,81s; `--filter SmokePagesTest` → **1 passed (3 assertions)**, 37,83s (70 halaman tetap 200).
+- Pemeriksaan lain: `composer validate` valid; `php -l` seluruh `app/` + `routes/` tanpa error; `php artisan route:list` ±387 baris tanpa error; Pint `--test` melaporkan gaya kompak pre-existing di semua file (tidak diformat massal agar diff minimal — keputusan sadar).
+- Catatan: suite penuh tidak dijalankan ulang dalam sesi ini (durasi ±27 menit, dilarang paralel); file yang diubah hanya 7 + 1 test baru, dan semua suite yang menyentuh area berubah hijau.
+
 ## Web v0.5.3 (auth landscape + error views) — 2026-10-17
 - Alasan: login kazaerp tampil kartu polos tanpa landscape (beda gaya dengan project lain yang split-screen); investigasi membuktikan Tabler asli & terkompilasi (CSS 837 KB, selector `.card/.btn-primary/.navbar/.table` ada, MIME benar) — masalahnya desain, bukan aset rusak.
 - Perubahan: `layouts/auth.blade.php` baru + `app.css` (+panel gradient, responsif: panel hilang di mobile) + 4 view auth + 3 view error mandiri; `npm run build` 20,54s sukses.

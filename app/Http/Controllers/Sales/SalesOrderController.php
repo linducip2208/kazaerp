@@ -84,11 +84,14 @@ class SalesOrderController extends CrudController {
         if ($wh) {
             $lines = DB::table('sales_order_lines')->where('sales_order_id',$row->id)->get();
             foreach ($lines as $l) {
-                try { StockService::reserve($wh,$l->product_id,(float)$l->qty); } catch (\Throwable $e) {
-                    // batalkan status bila stok kurang? tetap approved tapi catat exception
+                try {
+                    StockService::reserve($wh,$l->product_id,(float)$l->qty);
+                    DB::table('stock_reservations')->insert(['warehouse_id'=>$wh,'product_id'=>$l->product_id,'ref_type'=>'sales_order','ref_id'=>$row->id,'qty'=>$l->qty,'status'=>'active','created_at'=>now(),'updated_at'=>now()]);
+                } catch (\Throwable $e) {
+                    // Stok kurang: SO tetap approved, tetapi TIDAK ada baris reservasi aktif
+                    // agar qty_reserved (ledger) konsisten dengan stock_reservations.
                     DB::table('doc_status_histories')->insert(['doc_type'=>'sales_orders','doc_id'=>$row->id,'from_status'=>'approved','to_status'=>'approved','actor_id'=>auth()->id(),'note'=>'Reservasi gagal: '.$e->getMessage(),'created_at'=>now(),'updated_at'=>now()]);
                 }
-                DB::table('stock_reservations')->insert(['warehouse_id'=>$wh,'product_id'=>$l->product_id,'ref_type'=>'sales_order','ref_id'=>$row->id,'qty'=>$l->qty,'status'=>'active','created_at'=>now(),'updated_at'=>now()]);
             }
         }
         } catch (\Throwable $e) {
