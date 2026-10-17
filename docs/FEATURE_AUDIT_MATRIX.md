@@ -20,9 +20,9 @@
 | HR + payroll | YA + slip PDF | draft→approve→jurnal gaji | YA (payroll 403 cashier) | jurnal balance | PARTIAL (aturan pajak/BPJS menunggu) |
 | Pet/vet/grooming/boarding/transport | YA | reservasi→checkin→selesai; overcapacity guard | YA (`pet.treat` klinis) | ledger konsumsi + GPS track | VERIFIED (inti) |
 | Thrift lot/item/live | YA | lot→item unik→live→jual (anti double-sell) | YA | alokasi biaya + guard unik | VERIFIED (inti) |
-| MFG desain/BOM/WO | YA (versi desain) | desain→BOM kunci→issue→produce + variance | YA | snapshot biaya + variance | PARTIAL (demo WO belum ada) |
-| Studio | YA (file private) | proyek→deliverable→approval | YA (scoping file) | histori | PARTIAL (versi/approval bertingkat belum E2E) |
-| Rental | YA (kalender) | reservasi→pakai→kembali + deposit liabilitas | YA | anti-bentrok + buffer | VERIFIED (inti) |
+| MFG desain/BOM/WO | YA (versi desain) | desain→BOM kunci→issue→produce + variance | YA | snapshot biaya + variance | PARTIAL (WO demo completed gel.2; jurnal variance menunggu HPP) |
+| Studio | YA (file private) | proyek→deliverable→approval | YA (scoping file) | histori | PARTIAL (demo proyek+v1 gel.2; approval bertingkat belum E2E) |
+| Rental | YA (kalender) | reservasi→pakai→kembali + deposit liabilitas | YA | anti-bentrok + buffer | VERIFIED (inti; deposit 100rb demo gel.2) |
 | Marketing + komisi | YA (voucher/campaign) | apply→pakai→loyalty; akrual→approve komisi | YA | accrual guard lunas | PARTIAL (aturan promo lanjutan menunggu) |
 | Governance (matrix/SoD/delegasi/approval) | YA | request→decide + delegasi bertanggal + **supersede** | YA (SoD + delegasi) | histori + lock | VERIFIED |
 | Laporan + ekspor/impor | filter + CSV penuh/PDF/cetak + template | rekonsiliasi (bank, budget vs aktual, worksheet) | YA (ekspor = `reports.export`) | CSV anti formula-injection | VERIFIED |
@@ -30,5 +30,7 @@
 | API v1 + scheduler/queue/backup | Sanctum + guard entitas + revoke | overdue/expiry alerts + backup harian | rate limit 60/mnt | idempoten + audit-integrity | VERIFIED |
 
 **Legenda**: VERIFIED = implementasi + tes + bukti run nyata ada. PARTIAL = inti jalan +
-smoke 200, pendalaman menunggu keputusan/data (bukan rusak). Tidak ada modul berstatus
-MISSING di dalam IN_SCOPE; yang di luar scope tercatat di `BLUEPRINT_TRACEABILITY.md` §4.
+smoke 200, pendalaman menunggu keputusan/data (bukan rusak). Skor 100/100 per fitur
+berbasis bukti: `docs/FEATURE_SCORECARD.md` (gel.2: 11 LULUS 100, 6 HAMPIR, 3 SEBAGIAN).
+Tidak ada modul berstatus MISSING di dalam IN_SCOPE; yang di luar scope tercatat di
+`BLUEPRINT_TRACEABILITY.md` §4.

@@ -12,6 +12,6 @@
 </form>
 <p class="text-center mt-3"><a href="{{ route('password.request') }}">Lupa kata sandi?</a></p>
 @if(!app()->environment('production') || config('kazaerp.demo_enabled'))
-<p class="text-center text-muted mt-2">Akun demo (non-produksi) — Email: <code>admin@kazaka.local</code> · Sandi: <code>Kazaka#2026</code></p>
+<p class="text-center text-muted mt-2">Akun demo (non-produksi) — Email: <code>admin@kazaka.local</code> · Sandi: <code>Demo#2026</code></p>
 @endif
 @endsection

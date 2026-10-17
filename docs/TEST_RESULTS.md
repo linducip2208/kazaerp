@@ -1,5 +1,22 @@
 # Test Results (dari run nyata — bukan klaim)
 
+## Gelombang finalisasi 2 — 2026-10-17 (demo MFG/rental/thrift/studio/pet + scorecard)
+- Perintah: `php artisan test --filter Phase10Test` (MySQL `kazaerp_testing`, migrate:fresh per TestCase)
+- Hasil: **5 passed, 0 failed — 36 assertions** (durasi 178,49s)
+- Cakupan: demo gelombang-2 idempotent 2× (WO/rental/thrift/studio/grooming/boarding tepat 1);
+  WO `DEMO-WO-001` completed + variance −10.000 + FG +10 + histori 3 tahap;
+  rental deposit 100.000 + clash tumpang tindih ditolak (tetap 1 reservasi);
+  thrift kode duplikat ditolak unique + live reserve 1× + reserve ulang ditolak;
+  studio+pet tampil di index + isolasi entitas.
+- Regresi: `--filter DemoPerfTest` → **4 passed / 23 assertions** (142,21s) — seeder
+  gelombang-2 tidak merusak idempotensi demo lama / jurnal balance / isolasi / dashboard <45 query.
+- File berubah: `database/seeders/DemoSeeder.php` (+5 metode demo), `tests/Feature/Phase10Test.php` (baru).
+- Dokumen: `docs/FEATURE_SCORECARD.md` (baru — 20 fitur × 10 kategori + total + bukti);
+  `DEMO_GUIDE.md` (§4 +5 skenario, §6 menyusut ke POS shift + payroll approve),
+  + pembaruan TRACEABILITY/AUDIT_MATRIX/IMPLEMENTATION/DECISIONS/FINALIZATION/CHANGELOG sesi ini.
+- Catatan: suite penuh tidak dijalankan (aturan larangan paralel + durasi ±27 menit);
+  controller tak diubah sesi ini (hanya seeder + tes + docs) sehingga regresi DemoPerfTest mencukupi.
+
 ## Suite penuh final v0.5.9 — 2026-10-17 (MySQL `kazaerp_testing`)
 - Perintah: `php artisan test` — log `storage/logs/full_suite_final.log`
 - Hasil: **63 passed, 0 failed, 0 skipped — 473 assertions** (durasi 1794,48s)

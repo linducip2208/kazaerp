@@ -69,3 +69,21 @@ ZRYN + ZAYAN **hanya bila status sah**, Balya Rent, governance/SOP/aset).
   — ubah expense setelah pengajuan → approval lama `superseded` + histori, pengajuan baru
   otomatis; ubah setelah disetujui → kembali `draft` + pengajuan ulang. `decide()` atas
   approval kedaluwarsa melempar (sudah diuji).
+
+## 6. Gelombang finalisasi 2 — paket demo 5 modul + scorecard (17 Okt 2026, tanpa migrasi)
+
+- `UNVERIFIED-09` (pet): DemoSeeder kini menanam pemilik+hewan+grooming `queued`+
+  boarding `reserved` (idempotent, guard nomor) — modul tetap VERIFIED (inti),
+  skor scorecard #10 = 93 (GPS provider tetap BLOCKED butir 12).
+- `UNVERIFIED-11` (MFG): WO demo `DEMO-WO-001` completed + variance −10.000 +
+  FG +10 + histori 3 tahap — tetap PARTIAL (perlakuan jurnal variance menunggu
+  HPP butir 11; WO demo SENGAJA tidak memposting jurnal), skor #11 = 90.
+- `UNVERIFIED-12` (thrift): lot+2 item unik + live reserve anti double-sell diuji —
+  tetap VERIFIED (inti), skor #12 = 90 (settlement lewat reserve belum E2E).
+- `UNVERIFIED-13` (studio): proyek+deliverable v1 di demo + tampil di index —
+  tetap PARTIAL (approval bertingkat belum E2E), skor #13 = 71.
+- `UNVERIFIED-14` (rental): katalog+unit+reservasi deposit 100.000 + clash ditolak —
+  tetap VERIFIED (inti), skor #14 = 94 (kebijakan deposit butir 8).
+- Dokumen baru `docs/FEATURE_SCORECARD.md`: 20 fitur × 10 kategori (bobot 100) +
+  total + bukti kode/tes + blocker — 11 LULUS 100, 6 HAMPIR, 3 SEBAGIAN, 0 bug kritis.
+  Bukti: `Phase10Test` 5/36 + regresi `DemoPerfTest` 4/23.

@@ -52,10 +52,25 @@ Login di `http://kazaerp.test/login` (dev). Semua akun non-aktif di produksi
    "Perlu perhatian" dashboard + badge governance + topbar.
 4. **Stok menipis**: `DEMO-003` tersedia 2 → kartu KPI + daftar "Stok menipis".
 5. **HR**: karyawan `DEMO-001` hadir hari ini → tile SDM dashboard.
-6. **Dashboard**: KPI + tren 6 bulan + per-entitas + keuangan/operasional/SDM
-   terisi dari data di atas (bukan angka statis).
-7. **Negatif (harus ditolak ramah)**: overpayment invoice lunas, oversell melebihi
-   stok, duplikat `vendor_ref` supplier — lihat `SalesFlowTest`/`PurchasingMatchTest`.
+6. **Manufaktur**: WO `DEMO-WO-001` (`completed`, 10 pcs) — BOM v1
+   di-snapshot (1× `DEMO-MAT-001` @5.000) → issue aktual @6.000 →
+   variance **−10.000** + 10 `DEMO-FG-001` masuk stok. Cek: Work Order →
+   histori released→in_progress→completed + kartu stok material/FG.
+7. **Rental**: reservasi `DEMO-RNT-001` (`reserved`, `DEMO-UNIT-001`,
+   +7..+9 hari, tarif 250.000, **deposit 100.000**) → uji bentrok:
+   booking tumpang tindih unit sama DITOLAK ramah.
+8. **Thrift**: lot `DEMO-LOT-001` + item `DEMO-THR-001/002` (unik,
+   cost_share 500.000/500.000) → live reserve 1× OK, reserve ulang
+   DITOLAK (anti double-sell); kode duplikat ditolak unique index.
+9. **Studio**: proyek `Katalog Demo` + deliverable `Draft 1` v1 → tampil
+   di index studio.
+10. **Pet**: pemilik `Pemilik Demo` + `Momo Demo` (kucing Anggora) →
+    grooming `DEMO-GRM-ORD-001` (`queued`, 80.000) + boarding
+    `DEMO-BRD-001` (`reserved`, deposit 50.000).
+11. **Dashboard**: KPI + tren 6 bulan + per-entitas + keuangan/operasional/SDM
+    terisi dari data di atas (bukan angka statis).
+12. **Negatif (harus ditolak ramah)**: overpayment invoice lunas, oversell melebihi
+    stok, duplikat `vendor_ref` supplier — lihat `SalesFlowTest`/`PurchasingMatchTest`.
 
 ## 5. Troubleshooting
 - `demo:seed` ditolak di production → setuju: memang diblokir. Gunakan DB terisolasi.
@@ -67,7 +82,8 @@ Login di `http://kazaerp.test/login` (dev). Semua akun non-aktif di produksi
   hanya ditanam sekali via `demo-opening`; transaksi `DEMO-*` dilewati bila ada).
 
 ## 6. Cakupan yang BELUM didemo-kan (jujur, bukan pura-pura)
-Pet/grooming/boarding, work order apparel, thrift live, studio, rental, POS shift,
-payroll approve — modul tersedia di menu (smoke 200) tetapi belum punya paket
-data demo; dimainkan manual mengikuti USER_MANUAL. Tidak ada simulasi integrasi
+POS shift, payroll approve — modul tersedia di menu (smoke 200) tetapi belum
+punya paket data demo; payroll approve menunggu aturan resmi (butir 6
+DECISIONS) sehingga tidak didemo-kan agar tidak mengarang kebijakan.
+Dimainkan manual mengikuti USER_MANUAL. Tidak ada simulasi integrasi
 (gateway/marketplace/WA/GPS) — menunggu provider & kredensial (DECISIONS butir 7).

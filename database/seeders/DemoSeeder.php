@@ -68,6 +68,11 @@ class DemoSeeder extends Seeder
         $this->demoSalesCycle($eid, $br, $wh, $cust->id, $p1, $admin->id, $today);
         $this->demoPurchaseCycle($eid, $br, $wh, $sup->id, $p1, $admin, $finance, $today);
         $this->demoHr($eid, $br, $emp, $today);
+        $this->demoMfg($eid, $br, $wh, $catId, $uom, $admin->id, $today);
+        $this->demoRental($eid, $br, $cust->id, $today);
+        $this->demoThrift($eid, $today);
+        $this->demoStudio($eid, $cust->id);
+        $this->demoPet($eid, $br, $cust->id, $today);
     }
 
     // ---------- helpers ----------
@@ -81,6 +86,10 @@ class DemoSeeder extends Seeder
                 'holding_id' => $hid, 'legal_entity_id' => $eid, 'branch_id' => $br,
                 'email_verified_at' => now(), 'created_at' => now(), 'updated_at' => now()]);
             $row = DB::table('users')->where('id', $id)->first();
+        } else {
+            // Idempotent demo = kredensial dikenal: samakan password bila pernah diubah manual.
+            DB::table('users')->where('id', $row->id)->update([
+                'password' => Hash::make(self::PASSWORD), 'is_active' => true, 'updated_at' => now()]);
         }
         $rid = DB::table('roles')->where('name', $role)->value('id');
         if ($rid) {
@@ -297,5 +306,168 @@ class DemoSeeder extends Seeder
     {
         DB::table('attendances')->updateOrInsert(['employee_id' => $empId, 'date' => $today],
             ['check_in' => '08:00:00', 'status' => 'present', 'created_at' => now(), 'updated_at' => now()]);
+    }
+
+    // ---------- MFG: desain → BOM → WO selesai + variance ----------
+
+    private function demoMfg($eid, $br, $wh, $catId, $uom, int $adminId, string $today): void
+    {
+        if (DB::table('work_orders')->where('number', 'DEMO-WO-001')->exists()) {
+            return;
+        }
+        DB::transaction(function () use ($eid, $br, $wh, $catId, $uom, $adminId, $today) {
+            $mat = $this->demoProduct($eid, $catId, $uom, 'DEMO-MAT-001', 'Kain Demo', 5000, 0);
+            $fg = $this->demoProduct($eid, $catId, $uom, 'DEMO-FG-001', 'Kaos Jadi Demo', 0, 120000);
+            if (! DB::table('stock_ledgers')->where(['ref_type' => 'demo-opening-mat', 'ref_id' => 0])->exists()) {
+                StockService::move(['warehouse_id' => $wh, 'product_id' => $mat, 'qty' => 50,
+                    'ref_type' => 'demo-opening-mat', 'ref_id' => 0, 'unit_cost' => 5000, 'note' => 'Stok awal material demo']);
+            }
+
+            $designId = DB::table('designs')->where(['legal_entity_id' => $eid, 'code' => 'DEMO-DSN-001'])->value('id');
+            if (! $designId) {
+                $designId = DB::table('designs')->insertGetId(['legal_entity_id' => $eid, 'code' => 'DEMO-DSN-001',
+                    'name' => 'Desain Kaos Demo', 'status' => 'approved', 'created_at' => now(), 'updated_at' => now()]);
+                DB::table('design_versions')->insert(['design_id' => $designId, 'version' => 1,
+                    'status' => 'approved', 'approved_by' => $adminId, 'created_at' => now(), 'updated_at' => now()]);
+            }
+
+            $bom = DB::table('boms')->where(['legal_entity_id' => $eid, 'product_id' => $fg, 'version' => 1])->first();
+            if (! $bom) {
+                $bomId = DB::table('boms')->insertGetId(['legal_entity_id' => $eid, 'product_id' => $fg,
+                    'version' => 1, 'status' => 'active', 'created_at' => now(), 'updated_at' => now()]);
+                DB::table('bom_lines')->insert(['bom_id' => $bomId, 'material_id' => $mat, 'qty' => 1,
+                    'created_at' => now(), 'updated_at' => now()]);
+            } else {
+                $bomId = $bom->id;
+            }
+
+            // WO 10 pcs: snapshot standar @5000 lalu biaya aktual naik @6000 → variance −10.000
+            $woId = DB::table('work_orders')->insertGetId(['legal_entity_id' => $eid, 'number' => 'DEMO-WO-001',
+                'date' => $today, 'bom_id' => $bomId, 'bom_version_locked' => 1, 'warehouse_id' => $wh,
+                'qty_planned' => 10, 'status' => 'released', 'created_at' => now(), 'updated_at' => now()]);
+            DB::table('work_order_lines')->insert(['work_order_id' => $woId, 'material_id' => $mat,
+                'qty_required' => 10, 'qty_issued' => 0, 'unit_cost' => 5000, 'issued_unit_cost' => 0,
+                'created_at' => now(), 'updated_at' => now()]);
+            DB::table('doc_status_histories')->insert(['doc_type' => 'work_orders', 'doc_id' => $woId,
+                'from_status' => null, 'to_status' => 'released', 'actor_id' => $adminId, 'created_at' => now(), 'updated_at' => now()]);
+
+            DB::table('products')->where('id', $mat)->update(['cost_price' => 6000]);
+            StockService::move(['warehouse_id' => $wh, 'product_id' => $mat, 'qty' => -10,
+                'ref_type' => 'work_order_issue', 'ref_id' => $woId, 'unit_cost' => 6000, 'note' => 'WO DEMO-WO-001']);
+            DB::table('work_order_lines')->where('work_order_id', $woId)
+                ->update(['qty_issued' => 10, 'issued_unit_cost' => 6000, 'updated_at' => now()]);
+            DB::table('work_orders')->where('id', $woId)->update(['status' => 'in_progress', 'started_at' => now(), 'updated_at' => now()]);
+            DB::table('doc_status_histories')->insert(['doc_type' => 'work_orders', 'doc_id' => $woId,
+                'from_status' => 'released', 'to_status' => 'in_progress', 'actor_id' => $adminId,
+                'note' => 'Material issued (demo)', 'created_at' => now(), 'updated_at' => now()]);
+
+            StockService::move(['warehouse_id' => $wh, 'product_id' => $fg, 'qty' => 10,
+                'ref_type' => 'work_order_output', 'ref_id' => $woId, 'unit_cost' => 6000, 'note' => 'WO DEMO-WO-001 good']);
+            DB::table('work_orders')->where('id', $woId)->update(['qty_good' => 10, 'status' => 'completed',
+                'completed_at' => now(), 'updated_at' => now()]);
+            \App\Http\Controllers\Mfg\WorkOrderController::recalcCost($woId);
+            DB::table('doc_status_histories')->insert(['doc_type' => 'work_orders', 'doc_id' => $woId,
+                'from_status' => 'in_progress', 'to_status' => 'completed', 'actor_id' => $adminId,
+                'note' => 'Output demo: good 10', 'created_at' => now(), 'updated_at' => now()]);
+        });
+    }
+
+    // ---------- Rental: katalog → unit → reservasi + deposit ----------
+
+    private function demoRental($eid, $br, int $custId, string $today): void
+    {
+        if (DB::table('rental_reservations')->where('number', 'DEMO-RNT-001')->exists()) {
+            return;
+        }
+        DB::transaction(function () use ($eid, $custId, $today) {
+            $cat = DB::table('rental_catalogs')->where(['legal_entity_id' => $eid, 'code' => 'DEMO-RENT-001'])->first();
+            $catId = $cat ? $cat->id : DB::table('rental_catalogs')->insertGetId(['legal_entity_id' => $eid,
+                'code' => 'DEMO-RENT-001', 'name' => 'Tenda Demo', 'rate' => 250000, 'is_active' => true,
+                'created_at' => now(), 'updated_at' => now()]);
+            $unit = DB::table('rental_units')->where('code', 'DEMO-UNIT-001')->first();
+            $unitId = $unit ? $unit->id : DB::table('rental_units')->insertGetId(['rental_catalog_id' => $catId,
+                'code' => 'DEMO-UNIT-001', 'status' => 'available', 'created_at' => now(), 'updated_at' => now()]);
+            DB::table('rental_reservations')->insert(['legal_entity_id' => $eid, 'number' => 'DEMO-RNT-001',
+                'rental_unit_id' => $unitId, 'customer_id' => $custId,
+                'start_date' => now()->addDays(7)->toDateString(), 'end_date' => now()->addDays(9)->toDateString(),
+                'rate' => 250000, 'deposit' => 100000, 'status' => 'reserved',
+                'created_at' => now(), 'updated_at' => now()]);
+        });
+    }
+
+    // ---------- Thrift: lot → 2 item unik ----------
+
+    private function demoThrift($eid, string $today): void
+    {
+        if (DB::table('thrift_lots')->where('number', 'DEMO-LOT-001')->exists()) {
+            return;
+        }
+        DB::transaction(function () use ($eid, $today) {
+            $lot = DB::table('thrift_lots')->insertGetId(['legal_entity_id' => $eid, 'number' => 'DEMO-LOT-001',
+                'date' => $today, 'acquisition_cost' => 1000000, 'status' => 'received',
+                'created_at' => now(), 'updated_at' => now()]);
+            DB::table('thrift_items')->insert([
+                ['thrift_lot_id' => $lot, 'code' => 'DEMO-THR-001', 'name' => 'Denim Demo 1',
+                    'cost_share' => 500000, 'price' => 150000, 'status' => 'sorted',
+                    'created_at' => now(), 'updated_at' => now()],
+                ['thrift_lot_id' => $lot, 'code' => 'DEMO-THR-002', 'name' => 'Denim Demo 2',
+                    'cost_share' => 500000, 'price' => 250000, 'status' => 'sorted',
+                    'created_at' => now(), 'updated_at' => now()],
+            ]);
+        });
+    }
+
+    // ---------- Studio: proyek + deliverable v1 ----------
+
+    private function demoStudio($eid, int $custId): void
+    {
+        $proj = DB::table('studio_projects')->where(['legal_entity_id' => $eid, 'title' => 'Katalog Demo'])->first();
+        $projId = $proj ? $proj->id : DB::table('studio_projects')->insertGetId(['legal_entity_id' => $eid,
+            'customer_id' => $custId, 'title' => 'Katalog Demo', 'brief' => 'Paket katalog demo (idempotent)',
+            'status' => 'brief', 'price' => 5000000, 'cost' => 2000000,
+            'created_at' => now(), 'updated_at' => now()]);
+        if (! DB::table('studio_deliverables')->where(['studio_project_id' => $projId, 'version' => 1])->exists()) {
+            DB::table('studio_deliverables')->insert(['studio_project_id' => $projId, 'title' => 'Draft 1',
+                'version' => 1, 'status' => 'draft', 'created_at' => now(), 'updated_at' => now()]);
+        }
+    }
+
+    // ---------- Pet: pemilik + hewan + grooming + boarding ----------
+
+    private function demoPet($eid, $br, int $custId, string $today): void
+    {
+        DB::transaction(function () use ($eid, $br, $custId, $today) {
+            $owner = DB::table('pet_owners')->where(['legal_entity_id' => $eid, 'name' => 'Pemilik Demo'])->first();
+            $ownerId = $owner ? $owner->id : DB::table('pet_owners')->insertGetId(['legal_entity_id' => $eid,
+                'customer_id' => $custId, 'name' => 'Pemilik Demo', 'phone' => '081200000001',
+                'created_at' => now(), 'updated_at' => now()]);
+            $pet = DB::table('pets')->where(['pet_owner_id' => $ownerId, 'name' => 'Momo Demo'])->first();
+            $petId = $pet ? $pet->id : DB::table('pets')->insertGetId(['pet_owner_id' => $ownerId,
+                'name' => 'Momo Demo', 'species' => 'cat', 'breed' => 'Anggora',
+                'created_at' => now(), 'updated_at' => now()]);
+
+            $svc = DB::table('grooming_services')->where(['legal_entity_id' => $eid, 'code' => 'DEMO-GRM-001'])->first();
+            $svcId = $svc ? $svc->id : DB::table('grooming_services')->insertGetId(['legal_entity_id' => $eid,
+                'code' => 'DEMO-GRM-001', 'name' => 'Mandi Demo', 'price' => 80000, 'duration_min' => 60,
+                'is_active' => true, 'created_at' => now(), 'updated_at' => now()]);
+            if (! DB::table('grooming_orders')->where('number', 'DEMO-GRM-ORD-001')->exists()) {
+                DB::table('grooming_orders')->insert(['legal_entity_id' => $eid, 'branch_id' => $br,
+                    'number' => 'DEMO-GRM-ORD-001', 'date' => $today, 'pet_id' => $petId,
+                    'grooming_service_id' => $svcId, 'status' => 'queued', 'grand_total' => 80000,
+                    'created_at' => now(), 'updated_at' => now()]);
+            }
+
+            $room = DB::table('boarding_rooms')->where(['branch_id' => $br, 'code' => 'D-ROOM-1'])->first();
+            $roomId = $room ? $room->id : DB::table('boarding_rooms')->insertGetId(['branch_id' => $br,
+                'code' => 'D-ROOM-1', 'name' => 'Kamar Demo 1', 'capacity' => 5, 'rate' => 100000,
+                'is_active' => true, 'created_at' => now(), 'updated_at' => now()]);
+            if (! DB::table('boarding_reservations')->where('number', 'DEMO-BRD-001')->exists()) {
+                DB::table('boarding_reservations')->insert(['legal_entity_id' => $eid, 'branch_id' => $br,
+                    'number' => 'DEMO-BRD-001', 'pet_id' => $petId, 'boarding_room_id' => $roomId,
+                    'check_in' => now()->addDay()->toDateString(), 'check_out' => now()->addDays(3)->toDateString(),
+                    'deposit' => 50000, 'grand_total' => 200000, 'status' => 'reserved',
+                    'created_at' => now(), 'updated_at' => now()]);
+            }
+        });
     }
 }

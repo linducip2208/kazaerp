@@ -35,5 +35,5 @@ Tidak ada blocker teknis. Blocker bisnis: lihat DECISIONS_AND_OPEN_QUESTIONS.md.
 
 ## Sesi audit menyeluruh 17 Okt 2026 (performa + demo + keamanan login)
 - DONE: N+1 otorisasi dashboard/sidebar (memoization request-scoped, 84→28 query); agregasi invoice (10→3 scan); DemoSeeder end-to-end idempotent + `demo:seed` + guard production + `demo_enabled`; hint kredensial login disembunyikan di production. Bukti: TEST_RESULTS.md (sesi lanjutan), PERFORMANCE_AUDIT.md, DEMO_GUIDE.md, DemoPerfTest 4 passed.
-- Parsial baru: paket data demo belum mencakup pet/grooming/boarding, WO apparel, thrift live, studio, rental, POS shift, payroll approve (modul tersedia, smoke 200; dimainkan manual).
+- Parsial baru: paket data demo belum mencakup POS shift, payroll approve (modul tersedia, smoke 200; dimainkan manual). Gelombang 2 (sesi ini) DONE: demo MFG WO completed+variance, rental+deposit, thrift+live guard, studio+deliverable v1, pet grooming+boarding — `Phase10Test` 5/36 + regresi DemoPerfTest 4/23.
 - Diketahui (bukan regresi): hitungan + badge approval pending bersifat global (tabel `approvals` tanpa `legal_entity_id`) — butir 17 DECISIONS.

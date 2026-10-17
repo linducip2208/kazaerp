@@ -1,5 +1,10 @@
 # Changelog
 
+## v0.6.1 — 2026-10-17 (gelombang finalisasi 2: demo 5 modul + scorecard, tanpa migrasi)
+- `DemoSeeder` +5 metode idempoten: WO `DEMO-WO-001` completed (variance −10.000, FG +10, histori 3 tahap); rental `DEMO-RNT-001` (deposit 100.000); thrift `DEMO-LOT-001`+2 item; studio `Katalog Demo`+deliverable v1; grooming `DEMO-GRM-ORD-001` + boarding `DEMO-BRD-001`. WO demo SENGAJA tanpa jurnal (variance menunggu HPP); payroll approve tidak didemo-kan (aturan resmi menunggu).
+- `tests/Feature/Phase10Test.php` baru **5 passed / 36 assertions**; regresi `DemoPerfTest` **4/23** hijau; `php -l` bersih; controller tak diubah sesi ini.
+- Dokumen baru `docs/FEATURE_SCORECARD.md` (20 fitur × 10 kategori: 11 LULUS 100, 6 HAMPIR, 3 SEBAGIAN, 0 bug kritis); DEMO_GUIDE §4+§6, TRACEABILITY §6, MATRIX, IMPLEMENTATION, TEST_RESULTS, FINALIZATION_AUDIT, DECISIONS butir 20 diperbarui.
+
 ## v0.6.0 — 2026-10-17 (validasi suite penuh final)
 - Suite penuh MySQL `kazaerp_testing`: **63 passed / 473 assertions / 0 failed** (1794,48s; log `storage/logs/full_suite_final.log`) — seluruh ronde v0.2.0–v0.5.9 termasuk Phase9Test, tanpa regresi.
 

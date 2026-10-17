@@ -2,6 +2,13 @@
 
 Audit + perbaikan nyata backend Laravel (mobile Flutter tidak diubah). Semua klaim di bawah dari run nyata.
 
+## 0c. Gelombang finalisasi 2 — paket demo MFG/rental/thrift/studio/pet + scorecard (17 Okt 2026)
+| ID | Severity | Temuan | Perbaikan (file) | Bukti |
+|----|----------|--------|------------------|-------|
+| D2 | P2 | Paket demo belum mencakup 5 modul (MFG WO, rental, thrift, studio, pet) — DEMO_GUIDE §6 jujur mencatatnya, tetapi modul terbaik pun butuh skenario verifikasi | `DemoSeeder` +5 metode idempoten (guard nomor/kode unik): WO `DEMO-WO-001` completed + variance −10.000 + FG +10; rental `DEMO-RNT-001` deposit 100.000; thrift `DEMO-LOT-001`+2 item; studio `Katalog Demo`+deliverable v1; grooming `DEMO-GRM-ORD-001` + boarding `DEMO-BRD-001` | `Phase10Test` 5/36 + `DemoPerfTest` 4/23 (regresi hijau) |
+| D3 | P3 | Belum ada penilaian 100/100 per fitur berbasis bukti (persyaratan tugas) | `docs/FEATURE_SCORECARD.md` baru: 20 fitur × 10 kategori + total + bukti kode/tes + kekurangan/blocker | 11 LULUS 100, 6 HAMPIR 90–99, 3 SEBAGIAN 70–89; 0 bug kritis terbuka |
+| — | — | Disengaja TIDAK didemo-kan: POS shift (status transien), payroll approve (aturan resmi BLOCKED butir 6 — tidak mengarang tarif); WO demo TIDAK memposting jurnal (perlakuan variance menunggu HPP butir 11) | — | DEMO_GUIDE §6 + DECISIONS butir 20 |
+
 ## 0b. Ronde finalisasi lanjutan — idempotensi bayar + anti stale approval (17 Okt 2026)
 Konteks: R1 (pembayaran invoice tanpa idempotency key) + celah stale approval (expense bisa
 diubah setelah pengajuan/disujui tanpa membatalkan approval lama).
