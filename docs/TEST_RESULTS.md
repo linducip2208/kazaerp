@@ -1,5 +1,10 @@
 # Test Results (dari run nyata — bukan klaim)
 
+## Suite penuh final v0.5.9 — 2026-10-17 (MySQL `kazaerp_testing`)
+- Perintah: `php artisan test` — log `storage/logs/full_suite_final.log`
+- Hasil: **63 passed, 0 failed, 0 skipped — 473 assertions** (durasi 1794,48s)
+- Mencakup seluruh ronde v0.2.0–v0.5.9 tanpa regresi: Phase2–Phase9 + Auth/BusinessRules/DemoPerf/FinancePosting/InventoryConcurrency/Isolation/PurchasingMatch/ReportsEnterprise/SalesFlow/SmokePages (70 halaman 200) — termasuk Phase9Test (4/29: double-submit 1 kunci, kunci beda 2 bayar, AP double-submit, expense edit batalkan approval).
+
 ## Ronde finalisasi 17 Okt 2026 — Phase9 (idempotensi bayar + anti stale approval)
 - Perintah: `php artisan test --filter Phase9Test` (MySQL `kazaerp_testing`, migrate:fresh per TestCase)
 - Hasil: **4 passed, 0 failed — 29 assertions** (durasi 161,52s)
