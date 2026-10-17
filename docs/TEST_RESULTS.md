@@ -1,5 +1,10 @@
 # Test Results (dari run nyata — bukan klaim)
 
+## Suite penuh v0.5.7 — 2026-10-17 (MySQL `kazaerp_testing`)
+- Perintah: `php artisan test` — log `storage/logs/v057_full.log`
+- Hasil: **59 passed, 0 failed, 0 skipped — 444 assertions** (durasi 1788,61s)
+- Mencakup seluruh ronde v0.2.0–v0.5.7 tanpa regresi: Phase2–Phase7 + Auth/BusinessRules/FinancePosting/InventoryConcurrency/Isolation/PurchasingMatch/SalesFlow/SmokePages (70 halaman 200) + ronde baru: DemoPerfTest (4/23: memoize permission, dashboard <45 query, demo idempotent + jurnal balance, demo login + isolasi entitas), Phase8Test (6/17: injectContext branch/creator, file scoping, lead-convert guard, reservasi hantu, impor tolak header rusak, netralisasi formula CSV), ReportsEnterpriseTest (7/57: filter laporan, ekspor CSV/PDF penuh, impor suppliers + template, tautan impor di index).
+
 ## Laporan enterprise + impor menyeluruh (ReportsEnterpriseTest) — 2026-10-17
 - Perintah: `php artisan test --filter ReportsEnterpriseTest` (MySQL `kazaerp_testing`, migrate:fresh per TestCase)
 - Hasil: **7 passed, 0 failed — 57 assertions** (durasi ±246 dtk; rerun 1 tes yang gagal karena bug pemanggilan `streamedContent()` di file tes itu sendiri, lalu full-file hijau)

@@ -1,5 +1,8 @@
 # Changelog
 
+## v0.5.8 — 2026-10-17 (validasi suite penuh)
+- Suite penuh MySQL `kazaerp_testing`: **59 passed / 444 assertions / 0 failed** (1788,61s; log `storage/logs/v057_full.log`) — mencakup seluruh ronde v0.2.0–v0.5.7 tanpa regresi (termasuk DemoPerfTest, Phase8Test, ReportsEnterpriseTest).
+
 ## v0.5.7 — 2026-10-17 (performa dashboard + demo end-to-end)
 - Performa dashboard: baseline terukur 127 ms / 84 query (50 query roles/permission = N+1 otorisasi; 10 scan invoices dari loop tren) → memoization request-scoped di `User` + 3 KPI jadi 1 SELECT + tren jadi 1 GROUP BY → **28 query**, ~86 ms; tanpa cache angka keuangan, otorisasi/audit utuh (bukti: `PERFORMANCE_AUDIT.md`).
 - Demo end-to-end: `DemoSeeder` ditulis ulang (SO→invoice→lunas, PO→GRN→VIN→bayar parsial, approval, stok menipis, HR; idempotent + jurnal balance), command `demo:seed` (menolak production), guard `demo_enabled`, hint login demo disembunyi di production; panduan `DEMO_GUIDE.md`.
