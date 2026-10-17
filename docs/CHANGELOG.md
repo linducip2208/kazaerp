@@ -1,5 +1,11 @@
 # Changelog
 
+## v0.5.6 — 2026-10-17 (laporan enterprise + impor)
+- Audit semua laporan: tombol Export CSV inventori & pembelian yang rusak diperbaiki; view pembelian salah kolom + filter tanggal mati diperbaiki; ringkasan penjualan kini menghormati filter `q`; ekspor penjualan mencakup SEMUA baris (cursor, ≤5000, anti formula-injection), bukan halaman aktif.
+- Ekspor PDF via dompdf (sudah terinstal, tanpa paket baru) + tampilan cetak di 8 laporan (4 operasional + ledger/trial/PL/aging); ekspor CSV di semua laporan keuangan.
+- Impor CSV suppliers baru + template CSV customers/products/suppliers + tombol "Impor CSV" di index pelanggan/supplier/produk (sebelumnya impor yatim tanpa tautan); pola validasi/audit sama (header wajib, batas 2000 baris, audit log).
+- Verifikasi: `ReportsEnterpriseTest` baru **7 passed / 57 assertions** (MySQL testing; independen dijalankan ulang: 235,66s hijau); `php -l` bersih, `route:list` OK. Docs `REPORTS_ENTERPRISE.md` baru; butir bisnis 16 (impor transaksional menunggu keputusan).
+
 ## v0.5.5 — 2026-10-17 (redesign dashboard admin)
 - Shell enterprise: sidebar kiri berkelompok collapsible (drawer + backdrop/Escape di mobile, persist localStorage), active state `routeIs()`, topbar ringkas (toggle, pencarian → filter laporan penjualan, pemilih entitas/cabang → `context.switch`, approval, notifikasi, profil); ikon SVG inline, tanpa CDN/paket baru.
 - Dashboard diurut prioritas: banner aksi (approval pending, stok menipis) → 4 KPI → grafik tren 280px + panel "Perlu perhatian" → pendapatan per entitas + SO terbaru → kartu Keuangan/Operasional/HR; semua tombol tertaut ke route nyata bergate permission; label "bukan laba".
