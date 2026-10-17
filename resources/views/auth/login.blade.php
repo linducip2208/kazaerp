@@ -11,5 +11,5 @@
 <button class="btn btn-primary btn-lg w-100">Masuk</button>
 </form>
 <p class="text-center mt-3"><a href="{{ route('password.request') }}">Lupa kata sandi?</a></p>
-<p class="text-center text-muted mt-2">Akun demo (non-produksi): admin@kazaka.local</p>
+<p class="text-center text-muted mt-2">Akun demo (non-produksi) — Email: <code>admin@kazaka.local</code> · Sandi: <code>Kazaka#2026</code></p>
 @endsection
