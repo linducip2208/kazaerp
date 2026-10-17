@@ -2,6 +2,16 @@
 
 Audit + perbaikan nyata backend Laravel (mobile Flutter tidak diubah). Semua klaim di bawah dari run nyata.
 
+## 0e. Ronde CRM-04/05/06 — penawaran berversi + gabung pelanggan + opt-out (17 Okt 2026)
+| ID | Severity | Temuan | Perbaikan (file) | Bukti |
+|----|----------|--------|------------------|-------|
+| C1 | P1 | CRM-04: `valid_until` ada di skema tapi tak dipakai — penawaran kedaluwarsa bisa disetujui; tanpa versi/syarat tercatat | `QuotationController` (validasi `valid_until ≥ date`, approve tolak kedaluwarsa + snapshot `quotation_versions` + histori), form/show + arsip versi; migrasi aditif `2026_10_17_110000` | `Phase12Test` validity+snapshot (approve OK + snapshot cocok total; expired ditolak, tetap draft) |
+| C2 | P1 | CRM-05: tak ada aksi gabung pelanggan — duplikat hanya ditolak saat convert, menumpuk tanpa resolusi | `CustomerController@merge` (perm `crm.convert`, lock, 1 entitas, bukan diri sendiri, sumber nonaktif + `merged_into_customer_id`, audit; histori dokumen tidak dipindah) + form di show; rute `crm.customers.merge` | `Phase12Test` merge (histori dipertahankan, gabung-ulang/diri ditolak, lintas entitas 404, tanpa wewenang 403) |
+| C3 | P2 | CRM-06: tanpa flag opt-out — pelanggan yang menolak promosi tak bisa dikecualikan dari daftar kampanye | `customers.marketing_opt_out` + kolom Promo + `CampaignController@show` (penerima = aktif − opt-out − gabungan; jumlah dikecualikan tampil) | `Phase12Test` opt-out (dikecualikan lalu tampil lagi setelah dicabut) |
+| C4 | P2 | Duplikat deklarasi `$searchable` di `CustomerController` (fatal saat boot bila kena) | Hapus blok duplikat | `php -l` + suite hijau |
+| — | — | Peran `branch_manager` TIDAK memegang `crm.convert` (by design: operasional terbatas) — merge oleh `module_operator`/super_admin | Tes disesuaikan; tidak ada perubahan seeder/hak | Seeder `RolesPermissionsSeeder.php:48-66` |
+| — | — | Threshold persetujuan diskon (nominal CRM-04/SLA §07) TETAP ilustrasi — tidak dikarang; snapshot mencatat diskon apa adanya | Tercatat di DECISIONS | — |
+
 ## 0d. Ronde blueprint v1.0 — traceability ID asli + CRM-03/RET tutup gap (17 Okt 2026)
 | ID | Severity | Temuan | Perbaikan (file) | Bukti |
 |----|----------|--------|------------------|-------|

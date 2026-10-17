@@ -6,6 +6,7 @@ Route::middleware(['auth','ctx'])->prefix('master')->name('master.')->group(func
 });
 Route::middleware(['auth','ctx'])->prefix('crm')->name('crm.')->group(function () {
     Route::resource('customers', \App\Http\Controllers\Master\CustomerController::class)->middleware('perm:crm.view');
+    Route::post('customers/{id}/merge', [\App\Http\Controllers\Master\CustomerController::class,'merge'])->name('customers.merge')->middleware('perm:crm.convert');
     Route::resource('suppliers', \App\Http\Controllers\Master\SupplierController::class)->middleware('perm:crm.view');
     Route::resource('leads', \App\Http\Controllers\Master\LeadController::class)->middleware('perm:crm.view');
     Route::resource('opportunities', \App\Http\Controllers\Master\OpportunityController::class)->middleware('perm:crm.view');

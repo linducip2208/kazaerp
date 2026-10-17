@@ -1,5 +1,10 @@
 # Changelog
 
+## v0.6.3 — 2026-10-17 (CRM-04/05/06: penawaran berversi + gabung pelanggan + opt-out)
+- Baru: **CRM-04** — `valid_until` di form quotation (≥ tanggal), approve menolak kedaluwarsa, snapshot versi per approve ke `quotation_versions` + arsip di show; **CRM-05** — `POST crm/customers/{id}/merge` (perm `crm.convert`, 1 entitas, sumber nonaktif + tertaut, histori dipertahankan + audit); **CRM-06** — `customers.marketing_opt_out` + kolom Promo + penerima kampanye (aktif − opt-out − gabungan, pengecualian dihitung).
+- Migrasi 100% aditif `2026_10_17_110000_close_crm_sales_gaps`; tanpa ubah/hapus kolom & data lama.
+- Verifikasi: `Phase12Test` baru **4 passed / 36 assertions**; regresi Phase11+SalesFlow **5/58** hijau. Marketing #15 naik 86→92 (SEBAGIAN→HAMPIR); CRM-04/05/06 di TRACEABILITY → VERIFIED.
+
 ## v0.6.2 — 2026-10-17 (dari blueprint resmi: CRM follow-up + tiket komplain)
 - Blueprint PDF v1.0 ditranskripsikan ke `docs/BLUEPRINT_V1_REQUIREMENTS.md`; `BLUEPRINT_TRACEABILITY.md` ditulis ulang dengan ID asli CRM/SAL/RET/CAT/…/GOV/UAT (ganti UNVERIFIED) + status VERIFIED/PARTIAL/MISSING/BLOCKED/OUT_OF_SCOPE.
 - Baru: **CRM-03 follow-up** (jadwal scoped-entitas, complete+lock+histori, escalate+notifikasi, `kaza:followup-reminders` dedupe 24 jam, scheduler 08:15); **RET-01/02/05 tiket komplain** (tracking `CMP-xxxxxx`, SoD pelapor≠penyelesai, lock, histori, reject beralasan).

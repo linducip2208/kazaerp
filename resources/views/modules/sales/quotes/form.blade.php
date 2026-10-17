@@ -9,6 +9,7 @@
 
 <div class="mb-3 col-md-4"><label class="form-label">Pelanggan</label><select name="customer_id" id="customer-select" class="form-select" required>@foreach($customers as $c)<option value="{{ $c->id }}" @selected(($customer?->id ?? null)===$c->id)>{{ $c->name }}</option>@endforeach</select>
 @if($customer)<div class="form-hint">Harga tier: <span class="badge bg-blue-lt">{{ \App\Services\PriceService::TIERS[\App\Services\PriceService::effectiveTier($customer->tier)] }}</span></div>@endif</div>
+<div class="mb-3 col-md-4"><label class="form-label">Berlaku hingga (masa berlaku penawaran)</label><input type="date" name="valid_until" class="form-control" min="{{ date('Y-m-d') }}"><div class="form-hint">Kosongkan bila tanpa batas. Penawaran kedaluwarsa tidak bisa disetujui.</div></div>
 </div>
 @include('components.doc-lines-form', ['products'=>$products])
 <div class="mt-3"><button class="btn btn-primary">Simpan</button></div>

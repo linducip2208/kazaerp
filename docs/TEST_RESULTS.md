@@ -1,5 +1,31 @@
 # Test Results (dari run nyata — bukan klaim)
 
+## Ronde CRM-04/05/06 — 2026-10-17 (penawaran berversi + gabung pelanggan + opt-out)
+- Perintah: `php artisan test --filter Phase12Test` (MySQL `kazaerp_testing`, migrate:fresh per TestCase)
+- Hasil: **4 passed, 0 failed — 36 assertions** (durasi ±155s)
+- Cakupan: quotation valid_until ≥ tanggal (mundur ditolak) → approve selagi berlaku +
+  snapshot `quotation_versions` (lines+total+diskon+valid_until) + histori draft→approved +
+  show memuat "Arsip versi"; quotation kedaluwarsa → approve ditolak, tetap draft, tanpa snapshot;
+  merge pelanggan (sumber nonaktif + `merged_into_customer_id`, baris dipertahankan, audit `merge`)
+  + tolak gabung-ulang/diri-sendiri; merge lintas entitas → 404; tanpa `crm.convert` → 403;
+  opt-out via PUT → campaign show mengecualikan opt-out + hasil gabungan, menghitung pengecualian;
+  cabut opt-out → kembali tampil.
+- Bug ditemukan & diperbaiki: duplikat deklarasi `$searchable` di `CustomerController`
+  (fatal `Cannot redeclare`) — dihapus duplikatnya; `campaigns` butuh `legal_entity_id`
+  (test diperbaiki); peran `branch_manager` TIDAK memegang `crm.convert` (hanya
+  `module_operator` + super_admin via semua-perm) — tes memakai `module_operator`.
+- Regresi sesi ini: `--filter "Phase11Test|SalesFlowTest"` → **5 passed / 58 assertions** (±182s).
+- File berubah: migrasi aditif `2026_10_17_110000_close_crm_sales_gaps`
+  (`quotations.version`, `quotation_versions`, `customers.marketing_opt_out` +
+  `merged_into_customer_id`); `Customer` (fillable/casts/accessor `promo`/`mergedInto`);
+  `CustomerController` (+opt-out field/rule/kolom, `merge` + scope guard);
+  `QuotationController` (valid_until, approve guard + snapshot, show versions);
+  `Quotation` fillable `version`; `CampaignController@show` (penerima eligible);
+  blade customers/show, quotes/form + show, campaigns/show; `routes/modules/master.php`
+  (+`crm.customers.merge`); `tests/Feature/Phase12Test.php` (baru).
+- Suite penuh tidak dijalankan (aturan larangan paralel + durasi ±27–30 menit; perubahan
+  terisolasi di CRM/sales/marketing + regresi bertarget hijau).
+
 ## Ronde blueprint v1.0 — 2026-10-17 (CRM-03 follow-up + RET tiket + traceability ID asli)
 - Perintah: `php artisan test --filter Phase11Test` (MySQL `kazaerp_testing`, migrate:fresh per TestCase)
 - Hasil: **4 passed, 0 failed — 44 assertions** (durasi ±133s)

@@ -1,6 +1,12 @@
-# Implementation Status (per 17 Okt 2026 — ronde blueprint v1.0)
+# Implementation Status (per 17 Okt 2026 — ronde CRM-04/05/06)
 
-## Sesi ini (blueprint v1.0 resmi)
+## Sesi ini (CRM-04 penawaran berversi + CRM-05 gabung pelanggan + CRM-06 opt-out)
+- **CRM-04**: `valid_until` di form quotation + approve menolak kedaluwarsa + snapshot versi per approve (`quotation_versions`) + arsip di show. Migrasi aditif `2026_10_17_110000`. Bukti: `Phase12Test` **4 passed / 36 assertions**; regresi Phase11+SalesFlow **5/58** hijau.
+- **CRM-05**: `POST crm/customers/{id}/merge` (perm `crm.convert`, lock, 1 entitas, sumber nonaktif + `merged_into_customer_id`, histori dipertahankan + audit) + form di show pelanggan. Catatan: `branch_manager` by design tidak memegang `crm.convert` (operasional terbatas) — merge oleh `module_operator`/super_admin.
+- **CRM-06**: `customers.marketing_opt_out` + kolom Promo + penerima kampanye (aktif − opt-out − gabungan). Marketing #15 naik 86→92 (SEBAGIAN→HAMPIR).
+- Threshold persetujuan diskon (nominal) tetap ilustrasi — tidak dikarang (lihat DECISIONS).
+
+## Sesi sebelumnya (blueprint v1.0 resmi)
 - Transkripsi verbatim PDF → `docs/BLUEPRINT_V1_REQUIREMENTS.md`; seluruh `UNVERIFIED-xx` diganti ID asli di `docs/BLUEPRINT_TRACEABILITY.md`.
 - Baru end-to-end: **CRM-03 follow-up** (`Crm/FollowupController` + `kaza:followup-reminders` + job dedupe + scheduler 08:15 + views + menu) dan **RET-01/02/05 tiket komplain** (`Crm/ComplaintController` + tracking `CMP-xxxxxx` + urgensi + SoD pelapor≠penyelesai + lock + histori + views + menu). Migrasi aditif `2026_10_17_100000`. Bukti: `Phase11Test` **4 passed / 44 assertions**; regresi SalesFlow 1/14 + Phase8 6/17 + SmokePages 1/3 hijau.
 - Gap jujur vs PDF: CAT/INP/PRC (alur), HRM-01/02, PAY-06, MKT-03/06, GOV-01/04/05/06, LOY-04/05/06 = **MISSING** (antre, bukan rusak); 30+ butir PARTIAL; kebijakan HPP/pajak/payroll/komisi/eliminasi/penomoran/SLA = ilustrasi/kerangka (BLOCKED).

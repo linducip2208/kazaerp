@@ -43,7 +43,7 @@ Ekspansi: tutup = nonaktif (bukan hapus) — didukung `is_active`.
 | Area | Status | Bukti/cadangan |
 |---|---|---|
 | Organisasi/pelanggan/hewan/SKU/layanan/vendor/karyawan/aset/akun | VERIFIED | CRUD + `Phase8Test` (impor + anti-duplikat + validasi) |
-| Duplikat = saran gabung, histori tetap | PARTIAL | Convert lead menolak duplikat (`master.php:12-27`); **gabung dua pelanggan oleh petugas berwenang MISSING** |
+| Duplikat = saran gabung, histori tetap | VERIFIED | Convert lead menolak duplikat (`master.php:12-27`); **gabung dua pelanggan oleh petugas berwenang** = `CustomerController@merge` + audit, sumber nonaktif + tertaut (histori tidak dipindah) — `Phase12Test` |
 | Penomoran usulan `INV-KNI-DJ-202610-00001` | ILUSTRASI — JANGAN terapkan massal | `DocNumberService` berjalan dgn skema sendiri; penomoran ulang dokumen lama = butuh persetujuan (catat keputusan) |
 | Urutan batal tidak dipakai ulang | VERIFIED | Nomor dari sequence, batal tidak mengisi ulang |
 | Migrasi: template/kolom/kamus/pemilik/cut-off + staging + baris ditolak | PARTIAL | Impor master CSV + template + tolak baris (`ImportController`, `Phase8Test`); **impor transaksional (invoice/PO/mutasi) BLOCKED** (butir 16 DECISIONS) |
@@ -55,9 +55,9 @@ Ekspansi: tutup = nonaktif (bukan hapus) — didukung `is_active`.
 | CRM-01 | Lead ditugaskan berdasar brand/jam/kapasitas; pindah owner tercatat | PARTIAL | `owner_id` + convert ada (`LeadController`); **aturan penugasan otomatis + log mutasi owner MISSING** |
 | CRM-02 | Pipeline terpisah per jenis + definisi keluar tiap tahap | PARTIAL | Stage lead + opportunity + konversi ada; **definisi keluar formal per pipeline MISSING** |
 | CRM-03 | Jadwal follow-up + pengingat + hasil + eskalasi lead terlantar | VERIFIED | `Crm/FollowupController.php` (jadwal/complete/escalate + lock + audit + notifikasi), `kaza:followup-reminders` + `SendFollowupReminder` (dedupe 24 jam, scheduler 08:15), views `modules/crm/followups/*`, `Phase11Test` 2/14 |
-| CRM-04 | Penawaran berversi (masa berlaku, rincian, syarat, approval diskon) | PARTIAL | `Sales/QuotationController.php` (approve draft→approved); **versi + validity + approval diskon MISSING** |
-| CRM-05 | Deteksi duplikat + penggabungan oleh petugas berwenang | PARTIAL | Convert menolak duplikat nama/telepon; **merge dua pelanggan MISSING** |
-| CRM-06 | Riwayat lintas brand sesuai akses; opt-out promosi | PARTIAL | Isolasi entitas + peran lintas (`IsolationTest`); **flag opt-out + filter kampanye MISSING** |
+| CRM-04 | Penawaran berversi (masa berlaku, rincian, syarat, approval diskon) | VERIFIED (inti) | `Sales/QuotationController.php` (valid_until wajib ≥ tanggal, approve tolak kedaluwarsa, snapshot `quotation_versions` per approve), views form/show + arsip versi, `Phase12Test` |
+| CRM-05 | Deteksi duplikat + penggabungan oleh petugas berwenang | VERIFIED | Convert menolak duplikat nama/telepon; merge `Master/CustomerController@merge` (perm `crm.convert`, 1 entitas, sumber nonaktif + `merged_into_customer_id`, histori dipertahankan, audit) + form show; `Phase12Test` |
+| CRM-06 | Riwayat lintas brand sesuai akses; opt-out promosi | VERIFIED | Isolasi entitas + peran lintas (`IsolationTest`); `customers.marketing_opt_out` + kolom Promo + `Marketing/CampaignController@show` (penerima = aktif − opt-out − gabungan, pengecualian dihitung); `Phase12Test` |
 | Kontrol CRM | CS tak sahkan bayar tanpa bukti; ekspor dibatasi; pesan via alur | VERIFIED | `perm:*` + `ReadOnlyRoles` + ekspor `reports.export` (`Phase5Test`) |
 
 ## SAL (P1)
@@ -313,7 +313,7 @@ Ekspansi: tutup = nonaktif (bukan hapus) — didukung `is_active`.
 | LOY-04 Reminder + rekomendasi medis dokter | MISSING | **Reminder loyalty + rekomendasi medis MISSING** |
 | LOY-05 Segmentasi repeat/dormant/bernilai | MISSING | **Segmentasi belum ada** |
 | LOY-06 Lintas brand + penanggung + settlement | MISSING | **Settlement internal loyalty belum ada** |
-| Kontrol LOY | VERIFIED (inti) | 1 voucher 1 tebus konkuren (lock); retur→koreksi (alur); opt-out PARTIAL (lihat CRM-06) |
+| Kontrol LOY | VERIFIED (inti) | 1 voucher 1 tebus konkuren (lock); retur→koreksi (alur); opt-out ditegakkan via `marketing_opt_out` + daftar penerima kampanye (`CampaignController@show`, `Phase12Test`) |
 
 ## GOV (P1)
 
