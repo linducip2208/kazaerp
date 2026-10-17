@@ -52,4 +52,7 @@ Route::middleware(['auth','ctx'])->prefix('reports')->name('reports.')->group(fu
     Route::post('import/customers', [\App\Http\Controllers\ImportController::class,'customersStore'])->name('import.customers.store')->middleware('perm:crm.create');
     Route::get('import/products', [\App\Http\Controllers\ImportController::class,'products'])->name('import.products')->middleware('perm:crm.create');
     Route::post('import/products', [\App\Http\Controllers\ImportController::class,'productsStore'])->name('import.products.store')->middleware('perm:crm.create');
+    Route::get('import/suppliers', [\App\Http\Controllers\ImportController::class,'suppliers'])->name('import.suppliers')->middleware('perm:crm.create');
+    Route::post('import/suppliers', [\App\Http\Controllers\ImportController::class,'suppliersStore'])->name('import.suppliers.store')->middleware('perm:crm.create');
+    Route::get('import/template/{name}', [\App\Http\Controllers\ImportController::class,'template'])->name('import.template')->middleware('perm:crm.create');
 });

@@ -1,5 +1,12 @@
 # Test Results (dari run nyata — bukan klaim)
 
+## Laporan enterprise + impor menyeluruh (ReportsEnterpriseTest) — 2026-10-17
+- Perintah: `php artisan test --filter ReportsEnterpriseTest` (MySQL `kazaerp_testing`, migrate:fresh per TestCase)
+- Hasil: **7 passed, 0 failed — 57 assertions** (durasi ±246 dtk; rerun 1 tes yang gagal karena bug pemanggilan `streamedContent()` di file tes itu sendiri, lalu full-file hijau)
+- Cakupan: halaman + filter + ringkasan penjualan; CSV penuh + PDF penjualan; kolom + CSV + PDF pembelian; halaman + CSV inventori & stok menua; 4 halaman + 4 CSV keuangan (ledger/trial/pl/aging); impor supplier (valid/duplikat/header buruk) + 3 template CSV + 3 halaman impor; tautan "Impor CSV" di 3 index.
+- Pemeriksaan lain: `php -l` 4 file PHP diubah tanpa error; `route:list --name=reports` 11 rute; tidak ada perubahan CSS/JS sehingga `npm run build` tidak diperlukan. Detail di docs/REPORTS_ENTERPRISE.md.
+- Catatan: suite penuh tidak dijalankan (durasi ±27 menit, dilarang paralel); tidak ada migrate:fresh di DB dev; tidak commit/push (working tree dibiarkan untuk review).
+
 ## Audit finalisasi v0.5.4 (7 perbaikan P0/P1/P2 + Phase8Test) — 2026-10-17
 - Perintah: `php artisan test --filter Phase8Test` (MySQL `kazaerp_testing`, migrate:fresh per test)
 - Hasil: **6 passed, 0 failed — 17 assertions** (durasi 194,67s)

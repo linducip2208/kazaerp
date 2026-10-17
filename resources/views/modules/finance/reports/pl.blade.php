@@ -1,7 +1,7 @@
 @extends('layouts.tabler')
 @section('title','Laba Rugi')
 @section('content')
-<div class="card"><div class="card-header"><h3 class="card-title">Laba Rugi</h3></div><div class="card-body">
+<div class="card"><div class="card-header"><div class="row align-items-center"><div class="col"><h3 class="card-title">Laba Rugi</h3></div><div class="col-auto"><a href="?export=csv&{{ http_build_query(request()->except('export')) }}" class="btn btn-sm btn-outline-primary">Ekspor CSV</a> <button class="btn btn-sm btn-secondary" onclick="window.print()">Cetak</button></div></div></div><div class="card-body">
 <div class="row"><div class="col-md-4"><div class="card"><div class="card-body"><div class="text-muted">Pendapatan</div><div class="h2">{{ idr($revenue) }}</div></div></div></div>
 <div class="col-md-4"><div class="card"><div class="card-body"><div class="text-muted">Beban</div><div class="h2">{{ idr($expense) }}</div></div></div></div>
 <div class="col-md-4"><div class="card"><div class="card-body"><div class="text-muted">Laba Bersih</div><div class="h2">{{ idr($net) }}</div></div></div></div></div>

@@ -29,8 +29,7 @@ class ImportController extends Controller {
         return back()->with('ok',"Import selesai: $ok berhasil, ".count($errs)." gagal.")->with('import_errors',$errs);
     }
     public function products() { return view('modules.import.products'); }
-    public function productsStore(Request $r) {
-        $r->validate(['file'=>'required|file|mimes:csv,txt|max:2048']);
+    public function productsStore(Request $r) {        $r->validate(['file'=>'required|file|mimes:csv,txt|max:2048']);
         $path = $r->file('file')->getRealPath();
         $h = fopen($path,'r'); $head = fgetcsv($h); $ok=0; $errs=[];
         if (!is_array($head) || !in_array('sku', $head, true) || !in_array('name', $head, true) || !in_array('sell_price', $head, true)) {
@@ -52,5 +51,40 @@ class ImportController extends Controller {
         fclose($h);
         \App\Services\AuditService::log('import','products',0,['entity'=>$eid,'ok'=>$ok,'failed'=>count($errs)]);
         return back()->with('ok',"Import selesai: $ok berhasil, ".count($errs)." gagal.")->with('import_errors',$errs);
+    }
+    public function suppliers() { return view('modules.import.suppliers'); }
+    public function suppliersStore(Request $r) {
+        $r->validate(['file'=>'required|file|mimes:csv,txt|max:2048']);
+        $path = $r->file('file')->getRealPath();
+        $h = fopen($path,'r'); $head = fgetcsv($h); $ok=0; $errs=[];
+        if (!is_array($head) || !in_array('code', $head, true) || !in_array('name', $head, true)) {
+            if (is_resource($h)) fclose($h);
+            return back()->withErrors(['msg'=>'Header CSV tidak valid. Wajib ada kolom: code,name (opsional: phone,email,bank_account).']);
+        }
+        $u = auth()->user(); $ctx = session('erp_context',[]); $eid = $ctx['legal_entity_id'] ?? $u->legal_entity_id;
+        $ln=1; $rows=0;
+        while (($row=fgetcsv($h))!==false) {
+            $ln++; if (++$rows > 2000) { $errs[]="Dibatasi 2000 baris per file; sisa baris diabaikan."; break; }
+            if (count($row) !== count($head)) { $errs[]="Baris $ln: jumlah kolom tidak sesuai header"; continue; }
+            $d = array_combine($head,$row);
+            if (empty($d['code'])||empty($d['name'])) { $errs[]="Baris $ln: code/nama wajib"; continue; }
+            if (!empty($d['email']) && !filter_var($d['email'], FILTER_VALIDATE_EMAIL)) { $errs[]="Baris $ln: email tidak valid"; continue; }
+            if (DB::table('suppliers')->where(['legal_entity_id'=>$eid,'code'=>$d['code']])->exists()) { $errs[]="Baris $ln: kode {$d['code']} duplikat"; continue; }
+            DB::table('suppliers')->insert(['legal_entity_id'=>$eid,'code'=>$d['code'],'name'=>$d['name'],'phone'=>$d['phone'] ?? null,'email'=>$d['email'] ?? null,'bank_account'=>$d['bank_account'] ?? null,'rating'=>0,'is_active'=>true,'created_at'=>now(),'updated_at'=>now()]);
+            $ok++;
+        }
+        fclose($h);
+        \App\Services\AuditService::log('import','suppliers',0,['entity'=>$eid,'ok'=>$ok,'failed'=>count($errs)]);
+        return back()->with('ok',"Import selesai: $ok berhasil, ".count($errs)." gagal.")->with('import_errors',$errs);
+    }
+    /** Unduh template header CSV agar format impor selalu benar. */
+    public function template(string $name) {
+        $map = [
+            'customers' => "code,name,phone,email\n",
+            'products' => "sku,name,sell_price,cost_price\n",
+            'suppliers' => "code,name,phone,email,bank_account\n",
+        ];
+        abort_unless(isset($map[$name]), 404);
+        return response($map[$name], 200, ['Content-Type'=>'text/csv','Content-Disposition'=>'attachment; filename="template-'.$name.'.csv"']);
     }
 }
