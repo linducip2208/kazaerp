@@ -1,5 +1,12 @@
 # Deployment (Laravel + MySQL)
 
+## Dev lokal (Laragon, Windows)
+- Serve via Laragon Apache (`http://kazaerp.test`, DocumentRoot `public/`, mod_php) atau `php artisan serve --host=127.0.0.1 --port=8099`.
+- **Penting**: Apache hanya membaca vhost saat start. Laragon membuat `etc/apache2/sites-enabled/auto.<nama>.test.conf` otomatis saat project ditambahkan — setelah itu **Apache wajib di-restart** (Laragon → Stop → Start). Tanpa restart, domain baru jatuh ke *default vhost* (`alias/wanode.conf` → proxy Node `127.0.0.1:8891`) dan menjawab **503 Service Unavailable** bila service 8891 mati (insiden 17 Okt 2026: Apache jalan sejak 8 Okt, vhost kazaerp dibuat 15 Okt).
+- Cek cepat: `curl.exe -s -o NUL -w '%{http_code}' http://kazaerp.test/` harus `200`; bila `503`, lihat ekor `bin/apache/httpd-*/logs/error_log` (cari `AH00957 ... 127.0.0.1:8891 failed` = jatuh ke proxy default).
+
+# Produksi
+
 - Document root: `public/`. HTTPS wajib. `APP_ENV=production APP_DEBUG=false`.
 - `.env` produksi: APP_KEY baru, DB kredensial kuat, MAIL, `KAZA_COGS_METHOD=none`.
 - `composer install --no-dev --optimize-autoloader; php artisan config:cache; route:cache; view:cache; npm run build`.
