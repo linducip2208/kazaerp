@@ -20,6 +20,14 @@ class DashboardController extends Controller
             ->when($eid, fn ($q) => $q->where('products.legal_entity_id', $eid))
             ->whereRaw('qty_on_hand - qty_reserved <= 5')->count();
         $pendingApprovals = DB::table('approvals')->where('status', 'pending')->count();
+        // Catatan skema: approvals tidak punya legal_entity_id → hitungan global (bukan per entitas).
+        $pendingList = DB::table('approvals')->where('status', 'pending')->orderByDesc('id')->limit(5)->get();
+        $lowItems = DB::table('stock_balances')->join('products', 'products.id', '=', 'stock_balances.product_id')
+            ->join('warehouses', 'warehouses.id', '=', 'stock_balances.warehouse_id')
+            ->when($eid, fn ($q) => $q->where('products.legal_entity_id', $eid))
+            ->whereRaw('qty_on_hand - qty_reserved <= 5')
+            ->selectRaw('products.sku, products.name, warehouses.code as wh, (stock_balances.qty_on_hand - stock_balances.qty_reserved) as avail')
+            ->orderBy('avail')->limit(5)->get();
         $orders = DB::table('sales_orders')->when($eid, fn ($q) => $q->where('legal_entity_id', $eid))->where('status', '!=', 'cancelled')->orderByDesc('id')->limit(8)->get();
         $perEntity = collect();
         if ($u->hasRole('super_admin', 'holding_owner', 'executive')) {
@@ -72,7 +80,9 @@ class DashboardController extends Controller
             ];
         }
 
-        return view('dashboard', compact('salesMonth', 'receivable', 'payable', 'lowStock', 'pendingApprovals', 'orders', 'perEntity', 'eid', 'bid', 'trend', 'fin', 'ops', 'hr'));
+        $entityCode = $eid ? DB::table('legal_entities')->where('id', $eid)->value('code') : null;
+
+        return view('dashboard', compact('salesMonth', 'receivable', 'payable', 'lowStock', 'pendingApprovals', 'pendingList', 'lowItems', 'orders', 'perEntity', 'eid', 'bid', 'entityCode', 'trend', 'fin', 'ops', 'hr'));
     }
 
     public function health()

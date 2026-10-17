@@ -3,7 +3,8 @@
 @section('content')
 <div class="card"><div class="card-header"><div class="row align-items-center"><div class="col"><h3 class="card-title">Laporan Penjualan</h3></div>
 <div class="col-auto"><a href="?export=csv&{{ http_build_query(request()->except('export')) }}" class="btn btn-outline-primary">Export CSV</a></div></div></div>
-<div class="card-body"><form method="GET" class="row g-2 mb-2"><div class="col-md-3"><input type="date" name="from" class="form-control" value="{{ request('from') }}"></div>
+<div class="card-body"><form method="GET" class="row g-2 mb-2"><div class="col-md-4"><input type="search" name="q" class="form-control" placeholder="Cari nomor invoice / pelanggan…" value="{{ request('q') }}"></div>
+<div class="col-md-3"><input type="date" name="from" class="form-control" value="{{ request('from') }}"></div>
 <div class="col-md-3"><input type="date" name="to" class="form-control" value="{{ request('to') }}"></div>
 <div class="col-md-2"><button class="btn btn-secondary">Filter</button></div></form>
 <div class="table-responsive"><table class="table"><thead><tr> <th>Nomor</th><th>Tanggal</th><th>Pelanggan</th><th class='text-end'>Total</th><th>Status</th></tr></thead><tbody>

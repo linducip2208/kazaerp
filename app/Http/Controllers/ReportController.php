@@ -5,9 +5,15 @@ use Illuminate\Support\Facades\DB;
 class ReportController extends Controller {
     public function sales(Request $r) {
         $ctx = session('erp_context',[]); $eid = $ctx['legal_entity_id'] ?? auth()->user()->legal_entity_id;
+        $q = trim((string) $r->q);
         $rows = DB::table('invoices')->join('customers','customers.id','=','invoices.customer_id')
             ->where('invoices.legal_entity_id',$eid)
-            ->when($r->from,fn($q)=>$q->where('invoices.date','>=',$r->from))->when($r->to,fn($q)=>$q->where('invoices.date','<=',$r->to))
+            ->when($q !== '', function ($qry) use ($q) {
+                $qry->where(function ($w) use ($q) {
+                    $w->where('invoices.number','like','%'.$q.'%')->orWhere('customers.name','like','%'.$q.'%');
+                });
+            })
+            ->when($r->from,fn($qry)=>$qry->where('invoices.date','>=',$r->from))->when($r->to,fn($qry)=>$qry->where('invoices.date','<=',$r->to))
             ->select('invoices.number','invoices.date','customers.name as customer','invoices.grand_total','invoices.paid_total','invoices.pay_status')
             ->orderByDesc('invoices.id')->paginate(25)->withQueryString();
         $sum = DB::table('invoices')->where('legal_entity_id',$eid)

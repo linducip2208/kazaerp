@@ -1,5 +1,11 @@
 # Changelog
 
+## v0.5.5 — 2026-10-17 (redesign dashboard admin)
+- Shell enterprise: sidebar kiri berkelompok collapsible (drawer + backdrop/Escape di mobile, persist localStorage), active state `routeIs()`, topbar ringkas (toggle, pencarian → filter laporan penjualan, pemilih entitas/cabang → `context.switch`, approval, notifikasi, profil); ikon SVG inline, tanpa CDN/paket baru.
+- Dashboard diurut prioritas: banner aksi (approval pending, stok menipis) → 4 KPI → grafik tren 280px + panel "Perlu perhatian" → pendapatan per entitas + SO terbaru → kartu Keuangan/Operasional/HR; semua tombol tertaut ke route nyata bergate permission; label "bukan laba".
+- Fix ikut: pencarian topbar `?q` kini benar-benar memfilter (`ReportController` + sales view).
+- Verifikasi: `npm run build` 20,5s sukses; `SmokePagesTest` 1 passed/3 assertions (70 halaman 200); `AuthTest` 2 passed/7 assertions; docs `ADMIN_DASHBOARD_REDESIGN.md` baru.
+
 ## v0.5.4 — 2026-10-17 (audit finalisasi backend)
 - 7 perbaikan keamanan/integritas: `injectContext` branch/`created_by` (P0); scoping daftar file privat, guard entitas lead-convert, reservasi hantu SO-approve (P1); netralisasi formula-injection CSV, hardening impor CSV (header/batas/audit), privasi daftar delegasi (P2).
 - Tes regresi baru `tests/Feature/Phase8Test.php`: **6 passed / 17 assertions** (MySQL `kazaerp_testing`); regresi Isolation+BusinessRules+SalesFlow 8/28 + SmokePages 70 halaman hijau.

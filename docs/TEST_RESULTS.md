@@ -133,3 +133,10 @@
 
 ## Error tersisa
 Tidak ada error yang diketahui pada suite dan smoke di atas. Keterbatasan (bukan error): lihat IMPLEMENTATION_STATUS (parsial/pending).
+
+## Redesign dashboard admin enterprise — 2026-10-17
+- Perintah: `npm run build` → sukses 20,53s (manifest 0,27 kB; CSS 845,76 kB / gzip 107,91 kB; JS 477,98 kB / gzip 155,97 kB). Tanpa CDN, tanpa dependensi npm baru (Chart.js lokal via `window.KazaChart`).
+- Perintah: `php artisan test --filter SmokePagesTest` (MySQL `kazaerp_testing`, migrate:fresh oleh harness) → **1 passed (3 assertions), 47,04s** — `/` + 60+ halaman menu semua 200 untuk super_admin dengan layout sidebar baru.
+- Perintah: `php artisan test --filter AuthTest` → **2 passed (7 assertions), 67,90s** — login OK/gagal + guest redirect (topbar profil/logout tidak regresi).
+- Bug saat pengerjaan: `/` sempat 500 — `@if` menempel pada teks (`berjalan@if`) tidak dikompilasi Blade (syarat word-boundary). Perbaikan: tambah spasi; `view:clear`; smoke hijau. Tidak ada migrate:fresh manual, tidak menyentuh DB produksi.
+- Detail visual/arsitektur: lihat `docs/ADMIN_DASHBOARD_REDESIGN.md`.
