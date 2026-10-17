@@ -1,5 +1,23 @@
 # Test Results (dari run nyata — bukan klaim)
 
+## Ronde finalisasi 17 Okt 2026 — Phase9 (idempotensi bayar + anti stale approval)
+- Perintah: `php artisan test --filter Phase9Test` (MySQL `kazaerp_testing`, migrate:fresh per TestCase)
+- Hasil: **4 passed, 0 failed — 29 assertions** (durasi 161,52s)
+- Cakupan: bayar invoice double-submit 1 kunci → 1 baris + 1 jurnal (replay, bukan duplikat);
+  kunci beda → 2 pembayaran sah + `paid`; bayar utang double-submit 1 kunci → 1 baris;
+  edit expense setelah pengajuan → approval lama `superseded` + histori + pengajuan baru,
+  `decide()` lama melempar, approve baru OK, edit pasca-approve → `draft` + pengajuan ulang.
+- Regresi area tersentuh: `--filter "SalesFlowTest|Phase2Test"` → **5 passed / 39 assertions**
+  (durasi 170,98s) — pay tanpa kunci (fallback uuid server) + bayar utang lama tetap hijau.
+- Migrasi `2026_10_17_000001_add_payment_idempotency_keys` (aditif: kolom nullable + unique
+  di `sales_payments`/`ap_payments`): `migrate --force` di dev OK; rollback path diuji via
+  struktur down() (tidak dijalankan di dev — larangan destruktif).
+- Pemeriksaan lain: `php -l` 6 file (4 controller/service + migrasi + test) bersih;
+  sapuan tombol palsu/CDN/TODO/Closure nihil (lihat FEATURE_AUDIT_MATRIX); `route:list`
+  386 rute ber-handler, 0 Closure.
+- Catatan: suite penuh tidak dijalankan (aturan larangan paralel + durasi ±27 menit);
+  file berubah menyentuh sales/purchasing/finance-expense/gov — regresi di atas mencakupnya.
+
 ## Suite penuh v0.5.7 — 2026-10-17 (MySQL `kazaerp_testing`)
 - Perintah: `php artisan test` — log `storage/logs/v057_full.log`
 - Hasil: **59 passed, 0 failed, 0 skipped — 444 assertions** (durasi 1788,61s)

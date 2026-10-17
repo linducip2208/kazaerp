@@ -22,8 +22,9 @@ class ApPaymentController extends Controller
     public function create(Request $r)
     {
         $vinv = $r->get('from_vinvoice') ? DB::table('vendor_invoices')->find($r->get('from_vinvoice')) : null;
+        $payToken = (string) \Illuminate\Support\Str::uuid();
 
-        return view('modules.purchasing.appayments.form', compact('vinv'));
+        return view('modules.purchasing.appayments.form', compact('vinv','payToken'));
     }
 
     public function store(Request $r)
@@ -31,12 +32,16 @@ class ApPaymentController extends Controller
         $r->validate([
             'vendor_invoice_id' => 'required|exists:vendor_invoices,id',
             'amount' => 'required|numeric|min:1', 'method' => 'required|in:cash,transfer,giro',
-            'date' => 'required|date',
+            'date' => 'required|date', 'idempotency_key' => 'nullable|string|max:64',
         ]);
+        $key = $r->input('idempotency_key') ?: (string) \Illuminate\Support\Str::uuid();
+        if (DB::table('ap_payments')->where('idempotency_key',$key)->exists()) {
+            return redirect()->route('purchasing.appayments.index')->with('ok','Pembayaran utang sudah tercatat sebelumnya (duplikat diabaikan).');
+        }
         $u = auth()->user();
         $ctx = session('erp_context', []);
         try {
-            DB::transaction(function () use ($r, $u, $ctx) {
+            DB::transaction(function () use ($r, $u, $ctx, $key) {
                 $v = DB::table('vendor_invoices')->where('id', $r->vendor_invoice_id)->lockForUpdate()->first();
                 $sisa = (float) $v->grand_total - (float) $v->paid_total;
                 if ((float) $r->amount > $sisa + 0.005) {
@@ -48,7 +53,8 @@ class ApPaymentController extends Controller
                     'legal_entity_id' => $v->legal_entity_id, 'branch_id' => $v->branch_id ?? $ctx['branch_id'] ?? $u->branch_id,
                     'number' => $number, 'date' => $r->date, 'vendor_invoice_id' => $v->id,
                     'supplier_id' => $v->supplier_id, 'method' => $r->method, 'amount' => $r->amount,
-                    'reference' => $r->reference, 'created_by' => $u->id, 'created_at' => now(), 'updated_at' => now(),
+                    'reference' => $r->reference, 'idempotency_key' => $key,
+                    'created_by' => $u->id, 'created_at' => now(), 'updated_at' => now(),
                 ]);
                 $paid = (float) $v->paid_total + (float) $r->amount;
                 DB::table('vendor_invoices')->where('id', $v->id)->update([
@@ -67,6 +73,13 @@ class ApPaymentController extends Controller
                     );
                 }
             });
+        } catch (\Illuminate\Database\QueryException $e) {
+            // Balapan kunci sama: pemenang sudah insert, yang kalah = replay (MySQL 1062).
+            if (($e->errorInfo[1] ?? 0) === 1062
+                && DB::table('ap_payments')->where('idempotency_key',$key)->exists()) {
+                return redirect()->route('purchasing.appayments.index')->with('ok','Pembayaran utang sudah tercatat sebelumnya (duplikat diabaikan).');
+            }
+            return back()->withErrors(['msg' => $e->getMessage()])->withInput();
         } catch (\Throwable $e) {
             return back()->withErrors(['msg' => $e->getMessage()])->withInput();
         }

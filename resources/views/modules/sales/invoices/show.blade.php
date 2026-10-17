@@ -7,6 +7,7 @@
 <div class="col-auto no-print"><a href="{{ route('sales.invoices.pdf',$row->id) }}" class="btn btn-outline-primary">PDF</a>
 <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#payModal">Bayar</button>
 <div class="modal fade" id="payModal"><div class="modal-dialog"><form method="POST" action="{{ route('sales.invoices.pay',$row->id) }}" class="modal-content">@csrf
+<input type="hidden" name="idempotency_key" value="{{ $payToken ?? '' }}">
 <div class="modal-header"><h5 class="modal-title">Catat Pembayaran</h5></div>
 <div class="modal-body"><div class="mb-2"><label class="form-label">Tanggal</label><input type="date" name="date" class="form-control" value="{{ date('Y-m-d') }}"></div>
 <div class="mb-2"><label class="form-label">Nominal (sisa: {{ idr($row->grand_total-$row->paid_total) }})</label><input type="number" step="any" name="amount" class="form-control" required></div>

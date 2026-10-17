@@ -35,8 +35,29 @@ class ApprovalService {
                 }
             })->exists();
     }
-    public static function decide(int $approvalId, string $decision, ?string $note = null): void {
-        DB::transaction(function () use ($approvalId, $decision, $note) {
+    /**
+     * Batalkan approval yang masih pending karena dokumen diubah setelah pengajuan.
+     * Entri lama berstatus `superseded` + jejak histori, sehingga penyetuju tidak
+     * bisa memutuskan konten kedaluwarsa. Kembalikan jumlah baris yang dibatalkan.
+     */
+    public static function invalidatePending(string $docType, int $docId, ?string $reason = null): int
+    {
+        $ids = DB::table('approvals')
+            ->where(['doc_type' => $docType, 'doc_id' => $docId, 'status' => 'pending'])
+            ->pluck('id');
+        foreach ($ids as $aid) {
+            DB::table('approvals')->where('id', $aid)->update([
+                'status' => 'superseded', 'note' => $reason, 'updated_at' => now(),
+            ]);
+            DB::table('approval_histories')->insert([
+                'approval_id' => $aid, 'action' => 'superseded', 'actor_id' => auth()->id(),
+                'note' => $reason, 'created_at' => now(), 'updated_at' => now(),
+            ]);
+        }
+
+        return count($ids);
+    }
+    public static function decide(int $approvalId, string $decision, ?string $note = null): void {        DB::transaction(function () use ($approvalId, $decision, $note) {
             $a = DB::table('approvals')->where('id', $approvalId)->lockForUpdate()->first();
             if (!$a || $a->status !== 'pending') throw new \RuntimeException('Approval tidak dalam status pending.');
             if ((int) $a->requested_by === (int) auth()->id()) {

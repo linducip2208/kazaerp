@@ -1,5 +1,11 @@
 # Changelog
 
+## v0.5.9 — 2026-10-17 (ronde finalisasi: idempotensi bayar + anti stale approval)
+- Pembayaran anti double-submit: `idempotency_key` unik (nullable, aditif) di `sales_payments` + `ap_payments` (migrasi `2026_10_17_000001`); token per render form + hidden field; kiriman ulang kunci sama = replay ramah (tanpa baris/jurnal baru, aman dari balapan via MySQL 1062); fallback uuid server bila kunci tak dikirim. Menutup risiko R1.
+- Anti stale approval: `ApprovalService::invalidatePending()` (pending→`superseded` + histori) + `ExpenseController@update` transaksional (batalkan lama → minta ulang otomatis; edit pasca-approve → `draft` + pengajuan baru); badge status approval diwarnai. PO/PR/payroll terverifikasi tak punya jalur edit.
+- Dokumen baru: `BLUEPRINT_TRACEABILITY.md` (UNVERIFIED-xx — PDF resmi tak ditemukan di repo), `FEATURE_AUDIT_MATRIX.md` (sapuan: 386 rute ber-handler/0 Closure, 0 CDN, 0 TODO, 2 `href="#"` dropdown sah).
+- Verifikasi: `Phase9Test` baru **4 passed / 29 assertions**; regresi `SalesFlowTest|Phase2Test` **5/39** hijau; `php -l` bersih; `migrate --force` dev OK. Suite penuh tidak dijalankan (aturan paralel).
+
 ## v0.5.8 — 2026-10-17 (validasi suite penuh)
 - Suite penuh MySQL `kazaerp_testing`: **59 passed / 444 assertions / 0 failed** (1788,61s; log `storage/logs/v057_full.log`) — mencakup seluruh ronde v0.2.0–v0.5.7 tanpa regresi (termasuk DemoPerfTest, Phase8Test, ReportsEnterpriseTest).
 

@@ -1,6 +1,12 @@
-# Implementation Status (per 17 Okt 2026 — v0.5.4 audit finalisasi)
+# Implementation Status (per 17 Okt 2026 — ronde finalisasi Phase9)
 
 ## Selesai (DONE, bukti run nyata)
+- Ronde finalisasi Phase9 (17 Okt 2026): pembayaran invoice & utang anti double-submit
+  (`idempotency_key` unik + replay aman, migrasi aditif) + expense anti stale-approval
+  (`invalidatePending` + pengajuan ulang otomatis, edit pasca-approve → `draft`).
+  Bukti: `Phase9Test` **4 passed / 29 assertions**; regresi SalesFlow+Phase2 **5/39** hijau.
+  Dokumen baru: `BLUEPRINT_TRACEABILITY.md` (UNVERIFIED-xx, PDF tak ditemukan),
+  `FEATURE_AUDIT_MATRIX.md` (sapuan 386 rute/0 Closure/0 CDN/0 TODO).
 - Foundation: Laravel 11.57 + PHP 8.3.30 + MySQL 8.4.9; 179 tabel; migrate:fresh hijau; seed hijau.
 - 70+ controller, 165+ Blade, ±200 routes, Tabler + Chart.js lokal.
 - API v1 Sanctum: login/me/logout, invoices, stock, products (+harga tier per pelanggan), customers, POS (shift open/close/checkout), GPS trips + entity guard + revoke.

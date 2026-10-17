@@ -2,6 +2,19 @@
 
 Audit + perbaikan nyata backend Laravel (mobile Flutter tidak diubah). Semua klaim di bawah dari run nyata.
 
+## 0b. Ronde finalisasi lanjutan — idempotensi bayar + anti stale approval (17 Okt 2026)
+Konteks: R1 (pembayaran invoice tanpa idempotency key) + celah stale approval (expense bisa
+diubah setelah pengajuan/disujui tanpa membatalkan approval lama).
+| ID | Severity | Temuan | Perbaikan (file) | Bukti |
+|----|----------|--------|------------------|-------|
+| R1 | P1 | Double-submit/retry pembayaran invoice & utang mengandalkan lock+sisa saja; klik ganda ≤ setengah sisa → 2 baris + 2 jurnal untuk 1 niat bayar. | Migrasi aditif `2026_10_17_000001` (`idempotency_key` unik nullable di `sales_payments`/`ap_payments`); token per render form (`show`/`create` + hidden field); pre-check + tangkap MySQL 1062 → replay ramah (tanpa baris/jurnal baru); fallback uuid bila kunci tak dikirim (kompatibel klien lama/API). | `Phase9Test` 3 tes bayar (replay 1 baris + 1 jurnal; kunci beda tetap 2 pembayaran sah) |
+| S1 | P1 | Expense (satu-satunya dokumen approval yang bisa diedit via `CrudController::update`) bisa diubah nominalnya setelah pengajuan/disujui — approver memutuskan konten kedaluwarsa. PO/PR/payroll tak punya jalur update (terverifikasi: tak ada method update). | `ApprovalService::invalidatePending()` (pending→`superseded` + histori) + override `ExpenseController@update` (transaksional): batalkan pending lama → minta ulang otomatis; edit pasca-approve → `draft` + riwayat + pengajuan baru. Badge status approval diwarnai (pending/approved/rejected/superseded). | `Phase9Test::test_edit_expense_membatalkan_approval_lama` (decide lama melempar; approve baru OK) |
+| — | — | Sapuan ulang tombol palsu/placeholder: `href="#"` = 2 dropdown-toggle sah; TODO/FIXME/Coming Soon = 0; CDN = 0; Closure route = 0 (386 ber-handler). | — | grep + `route:list` sesi ini |
+
+Risiko R1 DINYATAKAN DITUTUP untuk pembayaran invoice & utang web (kunci per render form +
+unique DB + penanganan balapan). Sisa: pola yang sama BELUM diterapkan ke modul kas/bank
+lain bila ada form bayar ganda di masa depan — tiru pola `idempotency_key` ini.
+
 ## 0. Sesi audit menyeluruh + finalisasi (17 Okt 2026, lanjutan)
 Konteks: keluhan dashboard kurang profesional, app terasa lambat pasca-redesign v0.5.5, demo tidak tersedia.
 | ID | Severity | Temuan | Perbaikan (file) | Bukti |
@@ -54,7 +67,10 @@ Tidak ditemukan: SQL injection (query builder binding; `whereRaw` hanya ekspresi
 - Suite penuh (±27 mnt) TIDAK dijalankan ulang sesi ini — dilarang paralel dan area berubah sudah dicakup regresi di atas.
 
 ## 6. Risiko tersisa
-- R1 (P2): double-submit pembayaran invoice mengandalkan lock + validasi sisa; belum ada idempotency key per request. Mitigasi: tombol konfirmasi + lock; pertimbangkan token idempotency bila terjadi klik ganda nyata.
+- R1 (P2 → DITUTUP 17 Okt 2026 untuk pembayaran invoice & utang): double-submit pembayaran invoice
+  mengandalkan lock + validasi sisa; idempotency key per request BELUM ada → **ditutup ronde Phase9**:
+  `idempotency_key` unik di `sales_payments`/`ap_payments` (migrasi aditif `2026_10_17_000001`),
+  token per render form + replay aman + fallback uuid. Bukti: `Phase9Test` 4/29 + regresi 5/39.
 - R2 (P2): password backup via argumen proses (lihat DECISIONS butir 15).
 - R3 (P2): penyimpanan waktu = wall-clock Jakarta, bukan UTC (lihat DECISIONS butir 14). Tampilan konsisten; jangan migrasi tanpa rencana.
 - R4: Pint melaporkan gaya kompak pre-existing di semua file — tidak diformat massal (diff minimal).

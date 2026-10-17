@@ -84,13 +84,20 @@ class InvoiceController extends CrudController {
     }
     public function show($id) {
         $row = $this->baseQuery()->with(['customer','lines','payments'])->findOrFail($id);
-        return view($this->viewPrefix.'.show',['row'=>$row,'meta'=>$this->meta()]);
+        $payToken = (string) \Illuminate\Support\Str::uuid();
+        return view($this->viewPrefix.'.show',['row'=>$row,'meta'=>$this->meta(),'payToken'=>$payToken]);
     }
     public function pay(Request $r, $id) {
-        $r->validate(['amount'=>'required|numeric|min:1','method'=>'required|in:cash,transfer,deposit','date'=>'required|date']);
+        $r->validate(['amount'=>'required|numeric|min:1','method'=>'required|in:cash,transfer,deposit','date'=>'required|date',
+            'idempotency_key'=>'nullable|string|max:64']);
         $inv = $this->baseQuery()->findOrFail($id);
+        // Kunci idempotensi: kiriman ulang (double-click/retry) dengan kunci sama = replay, bukan pembayaran baru.
+        $key = $r->input('idempotency_key') ?: (string) \Illuminate\Support\Str::uuid();
+        if (\Illuminate\Support\Facades\DB::table('sales_payments')->where('idempotency_key',$key)->exists()) {
+            return back()->with('ok','Pembayaran sudah tercatat sebelumnya (duplikat diabaikan).');
+        }
         try {
-        DB::transaction(function() use ($r,$inv) {
+        DB::transaction(function() use ($r,$inv,$key) {
             $inv2 = \App\Models\Sales\Invoice::where('id',$inv->id)->lockForUpdate()->first();
             $sisa = (float)$inv2->grand_total - (float)$inv2->paid_total;
             if ((float)$r->amount > $sisa + 0.005) throw new \RuntimeException('Pembayaran melebihi sisa tagihan ('.number_format($sisa,0).').');
@@ -100,7 +107,8 @@ class InvoiceController extends CrudController {
             $number = DocNumberService::next('PAY',$inv2->legal_entity_id,$inv2->branch_id,$ent?->code);
             DB::table('sales_payments')->insert(['legal_entity_id'=>$inv2->legal_entity_id,'branch_id'=>$inv2->branch_id,
                 'number'=>$number,'date'=>$r->date,'invoice_id'=>$inv2->id,'customer_id'=>$inv2->customer_id,
-                'method'=>$r->method,'amount'=>$r->amount,'created_by'=>$u->id,'created_at'=>now(),'updated_at'=>now()]);
+                'method'=>$r->method,'amount'=>$r->amount,'idempotency_key'=>$key,
+                'created_by'=>$u->id,'created_at'=>now(),'updated_at'=>now()]);
             $paid = (float)$inv2->paid_total + (float)$r->amount;
             $inv2->update(['paid_total'=>$paid,'pay_status'=> $paid >= (float)$inv2->grand_total - 0.005 ? 'paid' : 'partial']);
             if ($inv2->fresh()->pay_status === 'paid') {
@@ -115,6 +123,13 @@ class InvoiceController extends CrudController {
                     [['coa_id'=>$coa('1000'),'debit'=>(float)$r->amount,'credit'=>0],['coa_id'=>$coa('1200'),'debit'=>0,'credit'=>(float)$r->amount]],'pay-'.$number);
             }
         });
+        } catch (\Illuminate\Database\QueryException $e) {
+            // Balapan kunci sama: pemenang sudah insert, yang kalah = replay (MySQL 1062).
+            if (($e->errorInfo[1] ?? 0) === 1062
+                && \Illuminate\Support\Facades\DB::table('sales_payments')->where('idempotency_key',$key)->exists()) {
+                return back()->with('ok','Pembayaran sudah tercatat sebelumnya (duplikat diabaikan).');
+            }
+            return back()->withErrors(['msg' => $e->getMessage()]);
         } catch (\Throwable $e) {
             return back()->withErrors(['msg' => $e->getMessage()]);
         }
