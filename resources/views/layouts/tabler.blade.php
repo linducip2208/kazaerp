@@ -87,6 +87,8 @@ $isActive = fn($p) => request()->routeIs($p) ? 'active' : '';
             <a class="{{ $isActive('crm.suppliers.*') }}" href="{{ route('crm.suppliers.index') }}">Supplier</a>
             <a class="{{ $isActive('crm.leads.*') }}" href="{{ route('crm.leads.index') }}">Lead</a>
             <a class="{{ $isActive('crm.opportunities.*') }}" href="{{ route('crm.opportunities.index') }}">Opportunity</a>
+            <a class="{{ $isActive('crm.followups.*') }}" href="{{ route('crm.followups.index') }}">Follow-up</a>
+            <a class="{{ $isActive('crm.complaints.*') }}" href="{{ route('crm.complaints.index') }}">Komplain</a>
             <a class="{{ $isActive('master.*') }}" href="{{ route('master.products.index') }}">Produk</a>
             <a class="{{ $isActive('files.*') }}" href="{{ route('files.index') }}">Berkas</a>
           </div>

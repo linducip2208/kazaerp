@@ -1,5 +1,25 @@
 # Test Results (dari run nyata — bukan klaim)
 
+## Ronde blueprint v1.0 — 2026-10-17 (CRM-03 follow-up + RET tiket + traceability ID asli)
+- Perintah: `php artisan test --filter Phase11Test` (MySQL `kazaerp_testing`, migrate:fresh per TestCase)
+- Hasil: **4 passed, 0 failed — 44 assertions** (durasi ±133s)
+- Cakupan: follow-up jadwal→selesai→histori; double-complete ditolak; eskalasi + notifikasi;
+  IDOR lintas entitas 404 (show + complete); reminder `--sync` + dedupe 24 jam;
+  tiket open→in_review→resolved + SoD pelapor≠penyelesai + histori; resolve ganda + edit final ditolak;
+  reject beralasan; isolasi tiket.
+- Bug ditemukan & diperbaiki: `abort(404)` di dalam `DB::transaction` + catch `\Throwable` menelan
+  404 menjadi 302 — diperbaiki dengan rethrow `HttpException` di semua aksi complete/escalate/
+  review/resolve/reject (temuan berlaku ke pola yang sama; tidak ada pola serupa di controller lain
+  yang menelan abort — aksi lain memakai `findOrFail` di luar try/catch).
+- Regresi sesi ini: SalesFlowTest 1/14 hijau (38s); Phase8Test 6/17 hijau (215s);
+  SmokePagesTest 1/3 hijau (45s, 70 halaman 200 — termasuk menu Follow-up/Komplain baru).
+- File berubah: migrasi aditif `2026_10_17_100000`, `Complaint`/`Followup` fillable,
+  `Crm/FollowupController.php` + `Crm/ComplaintController.php` (baru),
+  `routes/modules/master.php`, `routes/console.php`, `SendFollowupReminders` + `SendFollowupReminder` (baru),
+  6 blade followups/complaints, menu `tabler.blade.php`, `tests/Feature/Phase11Test.php` (baru).
+- Suite penuh tidak dijalankan (aturan larangan paralel + durasi ±27–30 menit; perubahan
+  terisolasi di modul CRM + regresi bertarget hijau).
+
 ## Gelombang finalisasi 2 — 2026-10-17 (demo MFG/rental/thrift/studio/pet + scorecard)
 - Perintah: `php artisan test --filter Phase10Test` (MySQL `kazaerp_testing`, migrate:fresh per TestCase)
 - Hasil: **5 passed, 0 failed — 36 assertions** (durasi 178,49s)

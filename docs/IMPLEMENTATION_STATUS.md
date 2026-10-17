@@ -1,4 +1,9 @@
-# Implementation Status (per 17 Okt 2026 — ronde finalisasi Phase9)
+# Implementation Status (per 17 Okt 2026 — ronde blueprint v1.0)
+
+## Sesi ini (blueprint v1.0 resmi)
+- Transkripsi verbatim PDF → `docs/BLUEPRINT_V1_REQUIREMENTS.md`; seluruh `UNVERIFIED-xx` diganti ID asli di `docs/BLUEPRINT_TRACEABILITY.md`.
+- Baru end-to-end: **CRM-03 follow-up** (`Crm/FollowupController` + `kaza:followup-reminders` + job dedupe + scheduler 08:15 + views + menu) dan **RET-01/02/05 tiket komplain** (`Crm/ComplaintController` + tracking `CMP-xxxxxx` + urgensi + SoD pelapor≠penyelesai + lock + histori + views + menu). Migrasi aditif `2026_10_17_100000`. Bukti: `Phase11Test` **4 passed / 44 assertions**; regresi SalesFlow 1/14 + Phase8 6/17 + SmokePages 1/3 hijau.
+- Gap jujur vs PDF: CAT/INP/PRC (alur), HRM-01/02, PAY-06, MKT-03/06, GOV-01/04/05/06, LOY-04/05/06 = **MISSING** (antre, bukan rusak); 30+ butir PARTIAL; kebijakan HPP/pajak/payroll/komisi/eliminasi/penomoran/SLA = ilustrasi/kerangka (BLOCKED).
 
 ## Selesai (DONE, bukti run nyata)
 - Ronde finalisasi Phase9 (17 Okt 2026): pembayaran invoice & utang anti double-submit

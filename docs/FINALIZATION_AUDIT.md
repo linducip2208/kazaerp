@@ -2,6 +2,15 @@
 
 Audit + perbaikan nyata backend Laravel (mobile Flutter tidak diubah). Semua klaim di bawah dari run nyata.
 
+## 0d. Ronde blueprint v1.0 — traceability ID asli + CRM-03/RET tutup gap (17 Okt 2026)
+| ID | Severity | Temuan | Perbaikan (file) | Bukti |
+|----|----------|--------|------------------|-------|
+| B1 | P0 | `BLUEPRINT_TRACEABILITY.md` memakai `UNVERIFIED-xx` (PDF tak ditemukan saat itu) — tak bisa diverifikasi ke PDF | Transkripsi verbatim PDF → `docs/BLUEPRINT_V1_REQUIREMENTS.md` (baru, dari PDF resmi pemilik); traceability ditulis ulang penuh dgn **ID asli** CRM/SAL/RET/CAT/GRM/VET/INP/HOT/PRC/STD/TRN/PET/ART/APP/THR/RNT/INV/PUR/FIN/ACC/HRM/PAY/MKT/LOY/GOV-01..06 + UAT-01..12 + §01–§16 | Diff docs; butir 1 DECISIONS ditutup |
+| B2 | P1 | CRM-03: tabel `followups` mati (ada migrasi+model, tanpa controller/rute/view) — jadwal+pengingat+eskalasi lead terlantar tak berjalan | `Crm/FollowupController.php` (jadwal scoped, complete+lock+histori, escalate+notifikasi), `kaza:followup-reminders` + `SendFollowupReminder` (dedupe 24 jam, scheduler 08:15), views + menu; migrasi aditif `2026_10_17_100000` (`legal_entity_id`, `created_by`) | `Phase11Test` 2/14 hijau |
+| B3 | P1 | RET-01/02/05: tabel `complaints` mati — tiket komplain + urgensi + SoD tak berjalan | `Crm/ComplaintController.php` (tracking `CMP-xxxxxx`, review/assignee, resolve+decision wajib, **pelapor≠penyelesai**, lock, histori; reject beralasan), views + menu; migrasi aditif (urgency/decision/assignee/created_by/resolved_*) | `Phase11Test` 2/30 hijau |
+| B4 | P1 | Pola `catch (\Throwable)` menelan `abort(404)` menjadi 302 (IDOR lintas entitas tampak sebagai error validasi, bukan 404) | Rethrow `HttpException` di complete/escalate/review/resolve/reject | `Phase11Test::test_followup_isolation...` (sebelum: 302, sesudah: 404) |
+| — | — | Gap jujur (BUKAN regresi): CAT/INP/PRC alur + HRM-01/02 + PAY-06 + MKT-03/06 + GOV-01/04/05/06 + LOY-04/05/06 = **MISSING** (antre sah pasca-keputusan); 30+ PARTIAL; HPP/pajak/payroll/komisi/eliminasi/penomoran/SLA = ilustrasi (BLOCKED) | Tercatat di TRACEABILITY + IMPLEMENTATION_STATUS; tidak dikarang | — |
+
 ## 0c. Gelombang finalisasi 2 — paket demo MFG/rental/thrift/studio/pet + scorecard (17 Okt 2026)
 | ID | Severity | Temuan | Perbaikan (file) | Bukti |
 |----|----------|--------|------------------|-------|

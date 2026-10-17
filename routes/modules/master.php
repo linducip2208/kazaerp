@@ -9,6 +9,13 @@ Route::middleware(['auth','ctx'])->prefix('crm')->name('crm.')->group(function (
     Route::resource('suppliers', \App\Http\Controllers\Master\SupplierController::class)->middleware('perm:crm.view');
     Route::resource('leads', \App\Http\Controllers\Master\LeadController::class)->middleware('perm:crm.view');
     Route::resource('opportunities', \App\Http\Controllers\Master\OpportunityController::class)->middleware('perm:crm.view');
+    Route::resource('followups', \App\Http\Controllers\Crm\FollowupController::class)->middleware('perm:crm.view');
+    Route::post('followups/{id}/complete', [\App\Http\Controllers\Crm\FollowupController::class,'complete'])->name('followups.complete')->middleware('perm:crm.update');
+    Route::post('followups/{id}/escalate', [\App\Http\Controllers\Crm\FollowupController::class,'escalate'])->name('followups.escalate')->middleware('perm:crm.update');
+    Route::resource('complaints', \App\Http\Controllers\Crm\ComplaintController::class)->middleware('perm:crm.view');
+    Route::post('complaints/{id}/review', [\App\Http\Controllers\Crm\ComplaintController::class,'review'])->name('complaints.review')->middleware('perm:crm.update');
+    Route::post('complaints/{id}/resolve', [\App\Http\Controllers\Crm\ComplaintController::class,'resolve'])->name('complaints.resolve')->middleware('perm:crm.update');
+    Route::post('complaints/{id}/reject', [\App\Http\Controllers\Crm\ComplaintController::class,'reject'])->name('complaints.reject')->middleware('perm:crm.update');
     Route::post('leads/{id}/convert', function ($id) {
         $lead = \App\Models\Master\Lead::findOrFail($id);
         $me = auth()->user();

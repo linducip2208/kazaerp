@@ -10,7 +10,7 @@
 |---|---|---|---|---|---|
 | Auth/2FA/user/role | YA | login→2FA→ctx | YA + throttle + sesi nonaktif | audit_logs + login_activities | VERIFIED |
 | Org/holding/entity/branch/warehouse | YA | konteks + isolasi | YA (`baseQuery`, guard manual, API guard) | audit | VERIFIED |
-| CRM + master + impor CSV | YA + batas 2000 baris + validasi | lead convert anti-duplikat | YA (lead convert guard) | anti-duplikat, audit impor | VERIFIED |
+| CRM + master + impor CSV | YA + batas 2000 baris + validasi | lead convert anti-duplikat + follow-up + komplain (sesi ini) | YA (lead convert guard) | anti-duplikat, audit impor + histori transisi | VERIFIED |
 | Sales + invoice + **bayar idempoten** | YA | SO→approve→invoice→pay/partial/paid→retur/refund | YA | lock + sisa + **idempotency_key + replay** + jurnal | VERIFIED |
 | POS web/API + shift | YA | shift open→checkout→close + selisih | YA + rate limit | `client_ref` idempoten + ledger | VERIFIED |
 | Inventory + batch/QC | YA + kartu stok + aging | GRN→QC→release/quarantine→transfer/adjust | YA | lock + ledger + saldo + guard kedaluwarsa | VERIFIED |

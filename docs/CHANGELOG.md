@@ -1,5 +1,11 @@
 # Changelog
 
+## v0.6.2 — 2026-10-17 (dari blueprint resmi: CRM follow-up + tiket komplain)
+- Blueprint PDF v1.0 ditranskripsikan ke `docs/BLUEPRINT_V1_REQUIREMENTS.md`; `BLUEPRINT_TRACEABILITY.md` ditulis ulang dengan ID asli CRM/SAL/RET/CAT/…/GOV/UAT (ganti UNVERIFIED) + status VERIFIED/PARTIAL/MISSING/BLOCKED/OUT_OF_SCOPE.
+- Baru: **CRM-03 follow-up** (jadwal scoped-entitas, complete+lock+histori, escalate+notifikasi, `kaza:followup-reminders` dedupe 24 jam, scheduler 08:15); **RET-01/02/05 tiket komplain** (tracking `CMP-xxxxxx`, SoD pelapor≠penyelesai, lock, histori, reject beralasan).
+- Fix: `abort(404)` dalam transaction+catch menelan 404 jadi 302 — rethrow `HttpException`; migrasi aditif `2026_10_17_100000`.
+- Verifikasi: `Phase11Test` baru **4 passed / 44 assertions** (independen dijalankan ulang hijau); regresi SalesFlow+Phase8+SmokePages hijau. MISSING antrean: CAT/INP/PRC/HRM-rekrutmen/KPI/KOL/afiliate/SOP/aset/insiden.
+
 ## v0.6.1 — 2026-10-17 (gelombang finalisasi 2: demo 5 modul + scorecard, tanpa migrasi)
 - `DemoSeeder` +5 metode idempoten: WO `DEMO-WO-001` completed (variance −10.000, FG +10, histori 3 tahap); rental `DEMO-RNT-001` (deposit 100.000); thrift `DEMO-LOT-001`+2 item; studio `Katalog Demo`+deliverable v1; grooming `DEMO-GRM-ORD-001` + boarding `DEMO-BRD-001`. WO demo SENGAJA tanpa jurnal (variance menunggu HPP); payroll approve tidak didemo-kan (aturan resmi menunggu).
 - `tests/Feature/Phase10Test.php` baru **5 passed / 36 assertions**; regresi `DemoPerfTest` **4/23** hijau; `php -l` bersih; controller tak diubah sesi ini.

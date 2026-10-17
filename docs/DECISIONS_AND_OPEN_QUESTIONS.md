@@ -7,7 +7,7 @@
 - Error bisnis → pesan validasi ramah (bukan 500).
 
 ## PENDING_BUSINESS_DECISION (butuh owner/Finance)
-1. Blueprint PDF resmi belum ditemukan — mapping memakai Master Build Command; mohon sediakan file.
+1. ~~Blueprint PDF resmi belum ditemukan — mapping memakai Master Build Command~~ **SELESAI 17 Okt 2026**: blueprint tersedia sebagai transkripsi verbatim `docs/BLUEPRINT_V1_REQUIREMENTS.md` (PDF v1.0 14 Okt 2026 dari pemilik) + traceability ID asli di `docs/BLUEPRINT_TRACEABILITY.md`. File PDF biner tetap tidak disimpan di repo.
 2. Daftar legal entity & brand final (termasuk status ZAYAN Style, hubungan ZRYN ID/ZRYN Denim).
 3. Metode HPP (FIFO vs average vs none) — saat ini `none`.
 4. Kebijakan intercompany + eliminasi konsolidasi.
