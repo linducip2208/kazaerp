@@ -5,6 +5,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Services\DocNumberService;
 use App\Services\ApprovalService;
+use App\Services\AuditService;
 class PurchaseOrderController extends CrudController {
     protected string $model = \App\Models\Purchasing\PurchaseOrder::class;
     protected string $routePrefix = 'purchasing.orders';
@@ -59,6 +60,7 @@ class PurchaseOrderController extends CrudController {
             $ap = DB::table('approvals')->where(['doc_type'=>'purchase_order','doc_id'=>$id,'status'=>'pending'])->orderByDesc('id')->first();
             if ($ap) ApprovalService::decide($ap->id,'approved','OK');
             $this->setStatus($row,'draft','approved');
+            AuditService::log('approve','purchase_orders',$row->id,[]);
         } catch (\Throwable $e) {
             return back()->withErrors(['msg' => $e->getMessage()]);
         }

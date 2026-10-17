@@ -54,3 +54,28 @@ Bukan klaim produksi: angka di bawah dari MySQL lokal `kazaerp` (8.4.9), bukan s
 - Suite penuh (±27 mnt) tidak dijalankan (larangan paralel); area berubah dicakup regresi di atas.
 - Pint tidak dijalankan massal: file pre-existing pun tidak lolos gaya Pint (lihat FINALIZATION_AUDIT R4) — diff dijaga minimal.
 - Index tambahan tidak dibuat: tidak terbukti dibutuhkan pada pola query saat ini.
+
+## 6. Ronde polish 18 Okt 2026 (tanpa fitur baru)
+Metode sama: listener query + MySQL `kazaerp_testing`, hitung terisolasi per halaman (satu request per proses tes agar tidak tercemar state sesi).
+
+### 6.1 Aset: impor Bootstrap ganda dibuang
+Bukti: `tabler.min.js` (135.175 byte) membundel Bootstrap 5.3.8 penuh (Toast/Modal/Dropdown/Collapse ada,
+`window.bootstrap` diset) — versi identik dengan dep langsung `bootstrap@5.3.8`. `tabler.min.css` (635.382 byte)
+sudah memuat gaya Bootstrap. Impor terpisah murni duplikat.
+Perubahan: `resources/js/app.js` (hapus `import bootstrap.bundle`), `resources/css/app.css` (hapus
+`@import bootstrap.min.css`), tanpa perubahan visual/logika (semua kelas Bootstrap tetap dari Tabler).
+Hasil `npm run build` (3,27 dtk): JS 477.976 → 396.095 byte (−17%), CSS 845.761 → 649.309 byte (−23%);
+gzip JS ±156 → 131 KB, CSS ±108 → 82 KB. Verifikasi: `GET /login` 200, tidak ada referensi CDN,
+`build/assets/*` 200.
+
+### 6.2 N+1 halaman berat: diukur, TIDAK terbukti ada
+`tests/Feature/PolishPerfTest.php` (baru, 4 tes): `/crm/customers` 9 query, `/sales/orders` 8,
+`/reports/sales` 10, `/finance/journals` 8 — semua 200. Breakdown `reports/sales`: 1× users, 1× roles,
+1× paginate count, 1× agregat sum, 1× branches, 1× approvals, 2× notifications, 1× entities, 1× branches —
+tanpa pengulangan per-baris (pola join/agregat/cursor sudah benar). Kesimpulan: tidak ada eager loading
+atau indeks baru yang terbukti perlu; tidak ada migrasi skema pada ronde ini (aturan: aditif bila perlu).
+
+### 6.3 CI bertarget
+`.github/workflows/ci.yml` (baru): composer validate, `php -l` file PHP berubah, `route:list`,
+`npm ci + build`, tes terarah `AuthTest|IsolationTest|SmokePagesTest|DemoPerfTest`.
+Alasan targeted: suite penuh ±27 menit tidak layak per-push; suite penuh tetap manual pra-rilis.

@@ -4,6 +4,7 @@ use App\Http\Controllers\CrudController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Services\DocNumberService;
+use App\Services\AuditService;
 use App\Http\Controllers\Concerns\DocLines;
 class SalesReturnController extends CrudController {
     use DocLines;
@@ -54,6 +55,7 @@ class SalesReturnController extends CrudController {
     public function approve($id) {
         $row = $this->baseQuery()->findOrFail($id);
         $this->setStatus($row,'draft','approved');
+        AuditService::log('approve','sales_returns',$row->id,[]);
         return back()->with('ok','Retur Penjualan disetujui.');
     }
 }

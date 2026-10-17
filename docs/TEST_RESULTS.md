@@ -248,3 +248,37 @@ Tidak ada error yang diketahui pada suite dan smoke di atas. Keterbatasan (bukan
 - Perintah: `composer validate` → valid; `route:list` → 390 baris; `php -l` 6 file → bersih; `pint --test` → gagal juga di file pre-existing yang tak diubah (tidak diformat massal, diff minimal).
 - HTTP nyata dev (Apache kazaerp.test): `GET /login` → 200, 0,27s, hint demo tampil, tanpa referensi CDN.
 - Suite penuh tidak dijalankan (aturan: satu suite penuh +-27 mnt, dilarang paralel).
+
+## Ronde polish tanpa fitur baru — 2026-10-18 (kecepatan, kerapian, keamanan, operasional, DX)
+- Aset: `npm run build` → sukses (66 modul; CSS 649,80 kB/gzip 82,53 kB; JS 396,75 kB/gzip 131,66 kB; manifest 0,27 kB).
+  Sebelum: CSS 845.761 / JS 477.976 byte (impor Bootstrap ganda — Tabler 1.6.1 sudah membundel Bootstrap 5.3.8
+  identik + `window.bootstrap`). Sesudah: −23% CSS, −17% JS, tanpa perubahan visual/logika. Verifikasi:
+  `GET /login` → 200, tanpa referensi CDN, `build/assets/*` 200, string shortcut + `@page` ada di bundle.
+- CI: `.github/workflows/ci.yml` (baru) — composer validate, `php -l` file PHP berubah, `route:list`,
+  `npm ci + build`, tes terarah `AuthTest|IsolationTest|SmokePagesTest|DemoPerfTest` (suite penuh ±27 mnt
+  tidak layak per-push; manual pra-rilis). Sintaks YAML tervalidasi.
+- N+1: `PolishPerfTest` (baru, 4 tes) — `/crm/customers` 9 query, `/sales/orders` 8, `/reports/sales` 10,
+  `/finance/journals` 8 (terisolasi, MySQL `kazaerp_testing`); breakdown sales: tanpa pengulangan per-baris
+  (join/agregat/cursor). TIDAK terbukti perlu eager/index baru → tanpa migrasi skema.
+- Regresi gabungan area terdampak (satu proses sekuensial, MySQL `kazaerp_testing`):
+  `php artisan test --filter='AuthTest|IsolationTest|FinancePostingTest|PurchasingMatchTest|BusinessRulesTest|SalesFlowTest|PolishPerfTest|SecurityAuditTest|DuplicateHintTest|HealthCheckTest|SmokePagesTest'`
+  → **24 passed, 0 failed — 74 assertions, 987,70s**. Termasuk tes baru: `SecurityAuditTest` (2 passed:
+  approve SO+CN menulis `audit_logs`; email CRLF ditolak + `Mail::assertNothingSent`),
+  `DuplicateHintTest` (3 passed: supplier/produk duplikat ditandai, non-duplikat bersih),
+  `HealthCheckTest` (1 passed: `kaza:health` exit 0).
+- Keamanan: `composer audit` → 4 advisory `laravel/framework` v11.57.0 (fix hanya di v12 → BACKLOG #21;
+  mitigasi: sanitasi CR/LF di login/reset/pengguna, signed-URL nihil, `APP_DEBUG=false`);
+  `npm audit --omit=dev` → 0. Header: `X-Permitted-Cross-Domain-Policies: none` + CSP production diperketat
+  tanpa menyentuh `script-src`. Audit log dilengkapi 12 aksi sensitif (approve/reject governance, bayar utang,
+  konfirmasi bankrec, approve PO/quote/CN/DO/retur/SO/payroll, cancel SO, reverse jurnal) + route+tombol
+  approve yang tadinya mati untuk CN/retur/DO dilengkapkan mengikuti pola SO/quote (`perm:sales.approve`).
+- Operasional: drill restore — dump `kazaerp` 4,7 dtk (624.070 byte) → restore `kazaerp_scratch` → identik
+  (180 tabel; users 7, invoices 2, journals 6, audit_logs 2, products 5) → scratch di-DROP + file dibersihkan.
+  `kaza:health` (baru): DB, jobs/failed_jobs, storage writable, APP_DEBUG-di-production → SEHAT exit 0 di dev.
+  Slow-query: didokumentasikan di OPERATIONS_RUNBOOK (per-sesi, tanpa ubah server; dev: slow_log OFF, threshold 10 dtk).
+- UX: badge status konsisten (`components/status-badge`, fallback biru; dipakai tabel generik + show CN/DO/retur);
+  tabel baris dokumen dibungkus `.table-responsive`; stylesheet print diperluas (sembunyikan shell, `@page` 12mm,
+  thead berulang, anti-putus baris); shortcut `/` + `Ctrl/Cmd+Enter` (JS sendiri; lewati form konfirmasi destruktif);
+  manual per-peran ditulis ulang (`docs/USER_MANUAL.md`: 9 peran + shortcut + FAQ, sesuai fitur yang ada).
+- Duplikat: peringatan read-only di detail supplier/produk (telepon/nama atau SKU/nama sama, 1 entitas, maks 5).
+  Arsip data lama → BACKLOG #23 (butuh keputusan retensi/restore).

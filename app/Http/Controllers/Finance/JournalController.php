@@ -6,6 +6,7 @@ use Illuminate\Support\Facades\DB;
 use App\Services\DocNumberService;
 use App\Services\PostingService;
 use App\Services\ApprovalService;
+use App\Services\AuditService;
 class JournalController extends Controller {
     public function index(Request $r) {
         $ctx = session('erp_context',[]); $eid = $ctx['legal_entity_id'] ?? auth()->user()->legal_entity_id;
@@ -39,6 +40,7 @@ class JournalController extends Controller {
         $r->validate(['reason'=>'required|max:255']);
         try {
             PostingService::reverse((int)$id, $r->reason);
+            AuditService::log('reverse','journals',(int)$id,['reason'=>$r->reason]);
         } catch (\Throwable $e) {
             return back()->withErrors(['msg' => $e->getMessage()]);
         }

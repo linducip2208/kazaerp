@@ -33,6 +33,7 @@ class UserController extends CrudController
 
     public function store(Request $r)
     {
+        $r->merge(['email' => str_replace(["\r", "\n"], '', trim((string) $r->email))]);
         $v = $r->validate(array_merge($this->rules, ['password' => 'required|min:8']));
         $this->injectContext($v);
         $row = ($this->model)::create($v);
@@ -44,6 +45,7 @@ class UserController extends CrudController
     public function update(Request $r, $id)
     {
         $row = $this->baseQuery()->findOrFail($id);
+        $r->merge(['email' => str_replace(["\r", "\n"], '', trim((string) $r->email))]);
         $v = $r->validate(array_merge($this->rules, ['password' => 'nullable|min:8']));
         if (empty($v['password'])) {
             unset($v['password']);

@@ -6,6 +6,7 @@ use Illuminate\Support\Facades\DB;
 use App\Services\DocNumberService;
 use App\Services\ApprovalService;
 use App\Services\PostingService;
+use App\Services\AuditService;
 class PayrollController extends Controller {
     public function index() {
         $rows = DB::table('payrolls')->orderByDesc('id')->paginate(15);
@@ -52,6 +53,7 @@ class PayrollController extends Controller {
             $ap = DB::table('approvals')->where(['doc_type'=>'payroll','doc_id'=>$id,'status'=>'pending'])->orderByDesc('id')->first();
             if ($ap) ApprovalService::decide($ap->id,'approved','OK');
             DB::table('payrolls')->where('id',$id)->update(['status'=>'approved','approved_by'=>auth()->id()]);
+            AuditService::log('approve','payrolls',(int)$id,['grand_total'=>(float)$row->grand_total]);
             // Mapping jurnal: Dr Beban Gaji (6100) / Cr Utang Gaji (2300), idempotent via payroll_journals
             if (!DB::table('payroll_journals')->where('payroll_id',$id)->exists()) {
                 $coa = fn($code)=>DB::table('coas')->where(['legal_entity_id'=>$row->legal_entity_id,'code'=>$code])->value('id');

@@ -15,7 +15,7 @@
 <tbody>
 @forelse($rows as $row)<tr>
 @foreach(array_keys($m['columns']) as $col)
-<td>@if(str_contains($col,'price')||str_contains($col,'amount')||str_contains($col,'total')){{ idr($row->$col ?? 0) }}@elseif($col==='status'||$col==='pay_status')<span class="badge bg-blue">{{ $row->$col }}</span>@elseif($col==='is_active'){{ ($row->$col)?'Ya':'Tidak' }}@else{{ Str::limit($row->$col ?? '-',60) }}@endif</td>
+<td>@if(str_contains($col,'price')||str_contains($col,'amount')||str_contains($col,'total')){{ idr($row->$col ?? 0) }}@elseif($col==='status'||$col==='pay_status')@include('components.status-badge',['status'=>$row->$col])@elseif($col==='is_active'){{ ($row->$col)?'Ya':'Tidak' }}@else{{ Str::limit($row->$col ?? '-',60) }}@endif</td>
 @endforeach
 <td class="text-end"><a href="{{ route($m['route'].'.show',$row->id) }}" class="btn btn-sm btn-outline-primary">Buka</a></td>
 </tr>

@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Finance;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use App\Services\AuditService;
 
 class BankRecController extends Controller
 {
@@ -54,6 +55,7 @@ class BankRecController extends Controller
     {
         $row = DB::table('bank_reconciliations')->where('id', $id)->firstOrFail();
         DB::table('bank_reconciliations')->where('id', $id)->update(['status' => 'confirmed', 'note' => request('note', $row->note)]);
+        AuditService::log('confirm', 'bank_reconciliations', (int) $id, []);
 
         return back()->with('ok', 'Rekonsiliasi dikonfirmasi.');
     }

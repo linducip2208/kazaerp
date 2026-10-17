@@ -21,3 +21,27 @@ Aktor: pengguna internal lintas cabang, mantan karyawan (akun aktif), penyerang 
 
 ## Belum / hardening produksi
 HTTPS, header keamanan (CSP/HSTS), 2FA, password policy + reset mandiri, session invalidation massal saat revoke (parsial: cek `is_active` tiap request — pending middleware), rate-limit global, backup terenkripsi, disk private + antivirus upload. Lihat DEPLOYMENT + ROADMAP.
+
+## Triase audit dependensi 18 Okt 2026 (tanpa upgrade mayor)
+- `composer audit`: 4 advisory pada `laravel/framework` v11.57.0 (terbaru di lini v11; fix hanya di v12.60+/12.61+/12.69+).
+  Upgrade mayor v12 = BACKLOG (risiko breaking + PHP/dep; catat di DECISIONS_AND_OPEN_QUESTIONS).
+  - GHSA-5vg9 (CRLF injection via aturan `email`, tinggi): **dimitigasi** — CR/LF dibuang sebelum validasi di
+    login, lupa/reset kata sandi, dan create/update pengguna (`AuthController`, `PasswordResetController`,
+    `UserController`); nilai tervalidasi aman dipakai sebagai header email. Bukti: `SecurityAuditTest::test_email_crlf_dinetralkan`.
+  - GHSA-crmm (signed-URL path confusion, sedang): **tidak tereksploitasi** — tidak ada signed route di aplikasi
+    (`signedRoute`/`hasValidSignature` nihil); tetap backlog hingga upgrade v12.
+  - GHSA-jh5r (XSS halaman debug, rendah): **dimitigasi konfigurasi** — `APP_DEBUG=false` di `.env.example`;
+    verifikasi `kaza:health` gagal bila `APP_DEBUG=true` di production.
+- `npm audit --omit=dev`: 0 kerentanan.
+- Penguatan ronde ini: header `X-Permitted-Cross-Domain-Policies: none` + CSP production diperketat
+  (`object-src 'none'`, `base-uri 'self'`, `form-action 'self'`, `frame-ancestors 'self'` — tanpa mengubah
+  `script-src`, jadi tidak merusak inline script yang sudah ada).
+- Jejak audit dilengkapi (12 aksi, pola `AuditService::log` yang sama): approve/reject keputusan governance
+  (`gov.approvals.decide`), bayar utang (`ap_payments.store`), konfirmasi rekonsiliasi bank, approve
+  PO/quotation/credit-note/delivery-order/retur/SO/payroll, cancel SO, reverse jurnal. Bukti:
+  `SecurityAuditTest::test_approve_mencatat_audit_log`. Ekspor CSV/PDF laporan sengaja belum diaudit
+  (volume tinggi; PENDING_BUSINESS_DECISION bila dibutuhkan).
+- Operasional: drill restore 18 Okt 2026 — dump dev `kazaerp` (4,7 dtk, 624 KB) → restore ke `kazaerp_scratch` →
+  verifikasi identik (180 tabel; users 7, invoices 2, journals 6, audit_logs 2, products 5) → scratch di-DROP.
+  Command baru `php artisan kaza:health` (DB, jobs/failed_jobs, storage writable, APP_DEBUG di production;
+  exit 1 bila temuan — cocok untuk cron). Bukti: `HealthCheckTest`.

@@ -4,6 +4,7 @@ use App\Http\Controllers\CrudController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Services\DocNumberService;
+use App\Services\AuditService;
 use App\Http\Controllers\Concerns\DocLines;
 class QuotationController extends CrudController {
     use DocLines;
@@ -82,6 +83,7 @@ class QuotationController extends CrudController {
         } catch (\Throwable $e) {
             return back()->withErrors(['msg' => $e->getMessage()]);
         }
+        AuditService::log('approve', 'quotations', $row->id, ['version' => $row->version ?? 1]);
         return back()->with('ok', 'Quotation disetujui (versi ' . ($row->version ?? 1) . ' diarsipkan).');
     }
 }

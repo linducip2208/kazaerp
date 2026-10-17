@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Services\ApprovalService;
+use App\Services\AuditService;
 
 class ApprovalController extends Controller
 {
@@ -45,6 +46,7 @@ class ApprovalController extends Controller
         $r->validate(['decision' => 'required|in:approved,rejected', 'note' => 'nullable|max:500']);
         try {
             ApprovalService::decide((int) $id, $r->decision, $r->note);
+            AuditService::log($r->decision === 'approved' ? 'approve' : 'reject', 'approvals', (int) $id, ['note' => $r->note]);
         } catch (\Throwable $e) {
             return back()->withErrors(['msg' => $e->getMessage()]);
         }

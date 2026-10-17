@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Services\DocNumberService;
 use App\Services\PostingService;
+use App\Services\AuditService;
 
 class ApPaymentController extends Controller
 {
@@ -49,7 +50,7 @@ class ApPaymentController extends Controller
                 }
                 $ent = \App\Models\Org\LegalEntity::find($v->legal_entity_id);
                 $number = DocNumberService::next('AP', $v->legal_entity_id, $v->branch_id ?? $ctx['branch_id'] ?? $u->branch_id, $ent?->code);
-                DB::table('ap_payments')->insert([
+                $payId = DB::table('ap_payments')->insertGetId([
                     'legal_entity_id' => $v->legal_entity_id, 'branch_id' => $v->branch_id ?? $ctx['branch_id'] ?? $u->branch_id,
                     'number' => $number, 'date' => $r->date, 'vendor_invoice_id' => $v->id,
                     'supplier_id' => $v->supplier_id, 'method' => $r->method, 'amount' => $r->amount,
@@ -61,6 +62,7 @@ class ApPaymentController extends Controller
                     'paid_total' => $paid,
                     'status' => $paid >= (float) $v->grand_total - 0.005 ? 'paid' : 'partial',
                 ]);
+                AuditService::log('pay', 'ap_payments', (int) $payId, ['vendor_invoice_id' => $v->id, 'amount' => (float) $r->amount]);
                 $coa = fn ($code) => DB::table('coas')->where(['legal_entity_id' => $v->legal_entity_id, 'code' => $code])->value('id');
                 if ($coa('2000') && $coa('1000')) {
                     PostingService::postJournal(

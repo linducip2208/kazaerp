@@ -17,6 +17,9 @@ class PasswordResetController extends Controller
 
     public function sendLink(Request $r)
     {
+        // Mitigasi CRLF-injection (GHSA-5vg9, framework 11.57 belum patch; upgrade mayor = backlog):
+        // buang CR/LF sebelum validasi agar nilai tervalidasi aman dipakai sebagai header email.
+        $r->merge(['email' => str_replace(["\r", "\n"], '', trim((string) $r->email))]);
         $r->validate(['email' => 'required|email']);
         $status = Password::sendResetLink($r->only('email'));
         return $status === Password::RESET_LINK_SENT
@@ -31,6 +34,7 @@ class PasswordResetController extends Controller
 
     public function doReset(Request $r)
     {
+        $r->merge(['email' => str_replace(["\r", "\n"], '', trim((string) $r->email))]);
         $r->validate([
             'token' => 'required', 'email' => 'required|email',
             'password' => 'required|min:8|confirmed',

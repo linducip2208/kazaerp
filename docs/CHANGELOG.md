@@ -1,5 +1,12 @@
 # Changelog
 
+## v0.6.4 — 2026-10-17 (polish tanpa fitur baru: cepat, rapi, aman, operasional)
+- CI GitHub Actions baru (validate, php -l, route:list, npm build, tes terarah); aset dipangkas (CSS 835→649 KB, JS 477→396 KB, hapus impor Bootstrap ganda); N+1 terukur per halaman (tanpa eager/index baru yang perlu migrasi).
+- UX: badge status konsisten, tabel responsif, print CSS + `@page`, shortcut `/` dan `Ctrl/Cmd+Enter`, manual per peran ditulis ulang.
+- Keamanan: sanitasi CR/LF login/reset/pengguna, CSP diperketat, header tambah, 12 aksi sensitif kini diaudit; temuan bonus: approve CN/retur/DO tanpa route/tombol dilengkapi; `composer audit` 4 advisory FW (fix hanya v12 → backlog), `npm audit` 0.
+- Operasional: `kaza:health` baru (DB/antrean/storage, exit code), drill restore backup via scratch terverifikasi; saran duplikat read-only + tes; arsip → backlog (butuh keputusan retensi).
+- Verifikasi: regresi gabungan 11 suite **24 passed / 74 assertions**; HealthCheck+DupHint **4/7** dijalankan ulang hijau; `kaza:health` = SEHAT.
+
 ## v0.6.3 — 2026-10-17 (CRM-04/05/06: penawaran berversi + gabung pelanggan + opt-out)
 - Baru: **CRM-04** — `valid_until` di form quotation (≥ tanggal), approve menolak kedaluwarsa, snapshot versi per approve ke `quotation_versions` + arsip di show; **CRM-05** — `POST crm/customers/{id}/merge` (perm `crm.convert`, 1 entitas, sumber nonaktif + tertaut, histori dipertahankan + audit); **CRM-06** — `customers.marketing_opt_out` + kolom Promo + penerima kampanye (aktif − opt-out − gabungan, pengecualian dihitung).
 - Migrasi 100% aditif `2026_10_17_110000_close_crm_sales_gaps`; tanpa ubah/hapus kolom & data lama.

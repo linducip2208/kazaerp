@@ -1,7 +1,7 @@
 <div class="card mt-3"><div class="card-header"><h3 class="card-title">Baris Transaksi</h3></div>
 <div class="card-body">
-<table class="table" id="lines-table"><thead><tr><th>Produk</th><th style="width:120px">Qty</th><th style="width:160px">Harga</th><th></th></tr></thead>
-<tbody></tbody></table>
+<div class="table-responsive"><table class="table" id="lines-table"><thead><tr><th>Produk</th><th style="width:120px">Qty</th><th style="width:160px">Harga</th><th></th></tr></thead>
+<tbody></tbody></table></div>
 <button type="button" class="btn btn-outline-primary" id="add-line">+ Baris</button>
 </div></div>
 <script>

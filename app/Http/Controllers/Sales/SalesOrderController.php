@@ -97,6 +97,7 @@ class SalesOrderController extends CrudController {
         } catch (\Throwable $e) {
             return back()->withErrors(['msg' => $e->getMessage()]);
         }
+        AuditService::log('approve','sales_orders',$row->id,[]);
         return back()->with('ok','SO disetujui + stok direservasi.');
     }
     public function cancel($id) {
@@ -110,6 +111,7 @@ class SalesOrderController extends CrudController {
         } catch (\Throwable $e) {
             return back()->withErrors(['msg' => $e->getMessage()]);
         }
+        AuditService::log('cancel','sales_orders',$row->id,[]);
         return back()->with('ok','SO dibatalkan, reservasi dilepas.');
     }
 }

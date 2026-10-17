@@ -1,0 +1,80 @@
+# KazaERP CI — polish tanpa fitur baru.
+# Targeted (bukan suite penuh ±27 menit): subset cepat yang menutup area
+# yang paling sering berubah (auth, isolasi entitas, smoke halaman, regresi performa).
+# Suite penuh tetap dijalankan manual via `php artisan test` sebelum rilis.
+name: ci
+
+on:
+  push:
+    branches: ['**']
+  pull_request:
+
+jobs:
+  build-test:
+    runs-on: ubuntu-latest
+    services:
+      mysql:
+        image: mysql:8.4
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: kazaerp_testing
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h localhost -uroot -proot"
+          --health-interval=10s --health-timeout=5s --health-retries=10
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          extensions: mbstring, intl, pdo_mysql, bcmath, gd, zip
+          coverage: none
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+
+      - name: Composer validate
+        run: composer validate --strict
+
+      - name: Install PHP deps
+        run: composer install --no-interaction --prefer-dist --no-progress
+
+      - name: Syntax check (ubah PHP)
+        run: |
+          git fetch --no-tags origin main 2>/dev/null || true
+          FILES=$(git diff --name-only origin/main...HEAD -- '*.php' 2>/dev/null || git diff --name-only HEAD -- '*.php')
+          if [ -z "$FILES" ]; then FILES=$(git ls-files 'app/*.php' 'routes/*.php' 'config/*.php'); fi
+          echo "$FILES" | xargs -r -n1 php -l
+
+      - name: Route list (deteksi route yatim)
+        env:
+          DB_CONNECTION: mysql
+          DB_HOST: 127.0.0.1
+          DB_PORT: 3306
+          DB_DATABASE: kazaerp_testing
+          DB_USERNAME: root
+          DB_PASSWORD: root
+        run: php artisan route:list --method=GET | head -5
+
+      - name: Install JS deps + build
+        run: |
+          npm ci --no-audit --no-fund
+          npm run build
+
+      - name: Targeted tests (cepat)
+        env:
+          APP_ENV: testing
+          DB_CONNECTION: mysql
+          DB_HOST: 127.0.0.1
+          DB_PORT: 3306
+          DB_DATABASE: kazaerp_testing
+          DB_USERNAME: root
+          DB_PASSWORD: root
+        run: php artisan test --filter='AuthTest|IsolationTest|SmokePagesTest|DemoPerfTest'

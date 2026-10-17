@@ -8,3 +8,4 @@
 - Insiden: bekukan posting (maintenance mode), snapshot DB, periksa audit_logs + login_activities, reversal (jangan hapus).
 - Closing bulanan: rekonsiliasi bank → review unposted → tutup periode → backup.
 - Recovery: RTO target 4 jam, RPO 24 jam (sesuaikan + uji).
+- Slow-query (temuan 18 Okt 2026: `slow_query_log=OFF`, `long_query_time=10` dtk di dev — JANGAN ubah konfigurasi server global; aktifkan per-sesi hanya saat profiling lalu matikan): `SET SESSION slow_query_log=1; SET SESSION long_query_time=1;` → jalankan skenario berat (dashboard, laporan + ekspor CSV) → baca log (`slow_query_log_file`) → `SET SESSION slow_query_log=0;`. Ambang anjuran produksi: 1 dtk; review mingguan via `mysqldumpslow`/`pt-query-digest`; temuan diverifikasi EXPLAIN dulu sebelum diusulkan indeks aditif (lihat PERFORMANCE_AUDIT).

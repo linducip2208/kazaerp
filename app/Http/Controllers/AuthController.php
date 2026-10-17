@@ -10,7 +10,7 @@ class AuthController extends Controller {
     }
     public function login(Request $r) {
         $r->validate(['email'=>'required|email','password'=>'required'],[],['email'=>'Email','password'=>'Kata sandi']);
-        $email = strtolower(trim($r->email));
+        $email = strtolower(str_replace(["\r", "\n"], '', trim($r->email)));
         $user = \App\Models\User::where('email',$email)->first();
         if ($user && !$user->is_active) {
             DB::table('login_activities')->insert(['user_id'=>$user->id,'email'=>$email,'ip'=>$r->ip(),'agent'=>substr((string)$r->userAgent(),0,250),'success'=>false,'created_at'=>now()]);

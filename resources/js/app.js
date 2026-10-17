@@ -1,5 +1,4 @@
 import './bootstrap';
-import 'bootstrap/dist/js/bootstrap.bundle.min.js';
 import '@tabler/core/dist/js/tabler.min.js';
 import Chart from 'chart.js/auto';
 
@@ -13,6 +12,27 @@ document.addEventListener('DOMContentLoaded', () => {
   });
   const toast = document.querySelector('.toast.autoshow');
   if (toast && window.bootstrap) new window.bootstrap.Toast(toast, { delay: 4000 }).show();
+
+  // Shortcut lokal (tanpa lib baru): "/" fokus pencarian, Ctrl/Cmd+Enter simpan form.
+  // Tidak mengubah alur apa pun — hanya mempercepat aksi yang sudah ada.
+  const isTyping = (el) => !!el && (el.isContentEditable
+    || ['INPUT', 'TEXTAREA', 'SELECT'].includes(el.tagName));
+  document.addEventListener('keydown', (e) => {
+    if (e.key === '/' && !e.ctrlKey && !e.metaKey && !e.altKey && !isTyping(document.activeElement)) {
+      const box = document.querySelector('input[name="q"]:not([disabled]), .topbar-search input:not([disabled])');
+      if (box) { e.preventDefault(); box.focus(); box.select(); }
+      return;
+    }
+    if ((e.ctrlKey || e.metaKey) && e.key === 'Enter' && !e.altKey) {
+      const form = document.activeElement ? document.activeElement.closest('form') : null;
+      const main = form || document.querySelector('form[method="POST"]');
+      if (main && !main.querySelector('[data-confirm]')) {
+        e.preventDefault();
+        if (main.requestSubmit) main.requestSubmit();
+        else main.submit();
+      }
+    }
+  });
 
   // Sidebar admin shell: collapse di desktop, drawer di mobile. Tanpa dependensi baru.
   const shell = document.querySelector('.admin-shell');

@@ -31,4 +31,17 @@ class ProductController extends CrudController {
     protected array $searchable = ['sku', 'name', 'barcode'];
     protected ?string $entityField = 'legal_entity_id';
     protected ?string $branchField = null;
+
+    /** Deteksi duplikat read-only (pola mapan: merge pelanggan CRM-05). Tidak menghapus/menggabung. */
+    public function show($id) {
+        $row = $this->baseQuery()->findOrFail($id);
+        $dupes = \Illuminate\Support\Facades\DB::table('products')
+            ->where('legal_entity_id', $row->legal_entity_id)
+            ->where('id', '!=', $row->id)->where('is_active', true)
+            ->where(function ($w) use ($row) {
+                $w->whereRaw('LOWER(name) = ?', [mb_strtolower($row->name)]);
+                if (trim((string) $row->sku) !== '') $w->orWhere('sku', $row->sku);
+            })->orderBy('id')->limit(5)->get(['id', 'sku', 'name']);
+        return view($this->viewPrefix.'.show', ['row' => $row, 'meta' => $this->meta(), 'dupes' => $dupes]);
+    }
 }
