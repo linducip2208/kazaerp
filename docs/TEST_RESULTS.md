@@ -147,3 +147,13 @@ Tidak ada error yang diketahui pada suite dan smoke di atas. Keterbatasan (bukan
 - Perintah: `php artisan test --filter AuthTest` → **2 passed (7 assertions), 67,90s** — login OK/gagal + guest redirect (topbar profil/logout tidak regresi).
 - Bug saat pengerjaan: `/` sempat 500 — `@if` menempel pada teks (`berjalan@if`) tidak dikompilasi Blade (syarat word-boundary). Perbaikan: tambah spasi; `view:clear`; smoke hijau. Tidak ada migrate:fresh manual, tidak menyentuh DB produksi.
 - Detail visual/arsitektur: lihat `docs/ADMIN_DASHBOARD_REDESIGN.md`.
+
+## Audit menyeluruh + finalisasi — 2026-10-17 (sesi lanjutan)
+- Baseline performa (harness CLI, data dan skenario identik, MySQL `kazaerp` dev): controller+render dashboard 127 ms / 84 query (roles/perm 50, invoices 10). Sesudah perbaikan: 86 ms / 28 query (roles/perm 1, invoices 3). HTML 31.390 byte, render OK.
+- Perintah: `php artisan test --filter DemoPerfTest` (MySQL `kazaerp_testing`) → **4 passed / 23 assertions, 167,85s** (memoize permission: 30 cek max 2 query; dashboard 200 dan di bawah 45 query; demo seeder idempotent + jurnal balance; isolasi entitas).
+- Regresi: `--filter SalesFlowTest|SmokePagesTest` → **2 passed / 17 assertions, 76,00s**; `--filter AuthTest|IsolationTest|FinancePostingTest|PurchasingMatchTest` → **7 passed / 22 assertions, 241,76s**.
+- Perintah: `npm run build` → sukses 19,96s (JS 477,98 kB/gzip 155,97 kB; CSS 845,76 kB/gzip 107,91 kB; manifest 0,27 kB).
+- Perintah: `php artisan demo:seed` 2x di `kazaerp` dev → idempotent (tiap nomor DEMO-* tepat 1); verifikasi: SO approved, INV paid 166.500, PO received, VIN partial/matched 255.000/555.000, 3 jurnal J-DEMO-* balance + posted, 1 approval pending, DEMO-003 avail 2, 5 akun demo.
+- Perintah: `composer validate` → valid; `route:list` → 390 baris; `php -l` 6 file → bersih; `pint --test` → gagal juga di file pre-existing yang tak diubah (tidak diformat massal, diff minimal).
+- HTTP nyata dev (Apache kazaerp.test): `GET /login` → 200, 0,27s, hint demo tampil, tanpa referensi CDN.
+- Suite penuh tidak dijalankan (aturan: satu suite penuh +-27 mnt, dilarang paralel).

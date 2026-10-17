@@ -1,5 +1,10 @@
 # Changelog
 
+## v0.5.7 — 2026-10-17 (performa dashboard + demo end-to-end)
+- Performa dashboard: baseline terukur 127 ms / 84 query (50 query roles/permission = N+1 otorisasi; 10 scan invoices dari loop tren) → memoization request-scoped di `User` + 3 KPI jadi 1 SELECT + tren jadi 1 GROUP BY → **28 query**, ~86 ms; tanpa cache angka keuangan, otorisasi/audit utuh (bukti: `PERFORMANCE_AUDIT.md`).
+- Demo end-to-end: `DemoSeeder` ditulis ulang (SO→invoice→lunas, PO→GRN→VIN→bayar parsial, approval, stok menipis, HR; idempotent + jurnal balance), command `demo:seed` (menolak production), guard `demo_enabled`, hint login demo disembunyi di production; panduan `DEMO_GUIDE.md`.
+- Verifikasi: `DemoPerfTest` baru **4 passed / 23 assertions** (MySQL testing; independen dijalankan ulang hijau); regresi SalesFlow+Smoke & Auth+Isolation+Finance+Purchasing hijau; butir bisnis 17–19 (waktu Jakarta vs UTC, password backup, hitungan approval global).
+
 ## v0.5.6 — 2026-10-17 (laporan enterprise + impor)
 - Audit semua laporan: tombol Export CSV inventori & pembelian yang rusak diperbaiki; view pembelian salah kolom + filter tanggal mati diperbaiki; ringkasan penjualan kini menghormati filter `q`; ekspor penjualan mencakup SEMUA baris (cursor, ≤5000, anti formula-injection), bukan halaman aktif.
 - Ekspor PDF via dompdf (sudah terinstal, tanpa paket baru) + tampilan cetak di 8 laporan (4 operasional + ledger/trial/PL/aging); ekspor CSV di semua laporan keuangan.

@@ -13,18 +13,37 @@ class User extends Authenticatable {
         return ['email_verified_at' => 'datetime','password' => 'hashed','is_active'=>'boolean','last_login_at'=>'datetime'];
     }
     public function roles() { return $this->belongsToMany(\App\Models\Identity\Role::class, 'role_user'); }
+    /** Request-scoped memoization: sidebar + dashboard memanggil hasPermission puluhan kali per halaman. */
+    private ?array $memoRoleNames = null;
+    private ?array $memoPerms = null;
+    private function memoRoleNames(): array {
+        if ($this->memoRoleNames === null) {
+            $this->memoRoleNames = $this->relationLoaded('roles')
+                ? $this->roles->pluck('name')->all()
+                : $this->roles()->pluck('name')->all();
+        }
+        return $this->memoRoleNames;
+    }
+    public function flushAuthCache(): void {
+        $this->memoRoleNames = null;
+        $this->memoPerms = null;
+        $this->unsetRelation('roles');
+    }
     public function hasRole(string ...$names): bool {
-        $roles = $this->relationLoaded('roles') ? $this->roles->pluck('name') : $this->roles()->pluck('name');
-        foreach ($names as $n) if ($roles->contains($n)) return true;
+        $roles = $this->memoRoleNames();
+        foreach ($names as $n) if (in_array($n, $roles, true)) return true;
         return false;
     }
     public function hasPermission(string $perm): bool {
         if (!$this->is_active) return false;
         if ($this->hasRole('super_admin')) return true;
-        return DB::table('permission_role')
-            ->join('role_user','role_user.role_id','=','permission_role.role_id')
-            ->join('permissions','permissions.id','=','permission_role.permission_id')
-            ->where('role_user.user_id',$this->id)->where('permissions.name',$perm)->exists();
+        if ($this->memoPerms === null) {
+            $this->memoPerms = DB::table('permission_role')
+                ->join('role_user','role_user.role_id','=','permission_role.role_id')
+                ->join('permissions','permissions.id','=','permission_role.permission_id')
+                ->where('role_user.user_id',$this->id)->pluck('permissions.name')->all();
+        }
+        return in_array($perm, $this->memoPerms, true);
     }
     public function inScope(string $type, int $id): bool {
         if ($this->hasRole('super_admin','holding_owner','executive','auditor')) return true;

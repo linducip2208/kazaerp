@@ -2,6 +2,20 @@
 
 Audit + perbaikan nyata backend Laravel (mobile Flutter tidak diubah). Semua klaim di bawah dari run nyata.
 
+## 0. Sesi audit menyeluruh + finalisasi (17 Okt 2026, lanjutan)
+Konteks: keluhan dashboard kurang profesional, app terasa lambat pasca-redesign v0.5.5, demo tidak tersedia.
+| ID | Severity | Temuan | Perbaikan (file) | Bukti |
+|----|----------|--------|------------------|-------|
+| P1 | P0 | N+1 otorisasi: `User::hasPermission()` query DB setiap panggilan; sidebar+dashboard ±35 panggilan → 50 query/halaman (±60% beban). Akar "makin lambat" v0.5.5. | `app/Models/User.php` → memoization request-scoped (`memoRoleNames`/`memoPerms`, `flushAuthCache()`) | Harness 84→28 query (roles 50→1); `DemoPerfTest::test_permission_memoized` (30 cek ≤2 query) |
+| P2 | P1 | Dashboard 10 scan `invoices` (3 KPI + loop 6× tren + per-entitas) | `app/Http/Controllers/DashboardController.php` → 1 SELECT kondisional + 1 GROUP BY + kolom dibatasi | `invoices` 10→3; total 84→28; waktu 127→86 ms; `test_dashboard_200_dan_query_terbatas` |
+| D1 | P1 | Demo tidak tersedia (seeder hanya 1 produk + 3 master, tanpa transaksi/scenario) | `database/seeders/DemoSeeder.php` → siklus SO→invoice→lunas, PO→GRN→VIN(matched)→bayar parsial, approval pending, stok menipis, HR; `app/Console/Commands/DemoSeedCommand.php` (`demo:seed`, tolak production); `config/kazaerp.php` (`demo_enabled`) | `demo:seed` 2× idempotent (counts=1); jurnal balance; `DemoPerfTest` 4 passed/23 assertions |
+| S1 | P1 | Hint kredensial demo di login tampil tanpa syarat (bocor ke production) | `resources/views/auth/login.blade.php` → tampil hanya non-prod / `demo_enabled` | HTTP dev 200 + hint tampil; tanpa CDN |
+| — | — | Pint: repo tidak lolos gaya Pint bahkan file pre-existing → TIDAK diformat massal (diff minimal), konsisten R4 | — | `pint --test` gagal di `PostingService.php`/`InvoiceController.php` (tak diubah) |
+
+Tidak ditemukan (pemeriksaan ulang): tombol palsu/placeholder (grep `TODO|FIXME|Coming Soon|...` hanya input `placeholder=` HTML yang sah), route tanpa handler (`route:list` 390 baris OK), CDN eksternal (login HTML tanpa `cdn./unpkg/cdnjs/jsdelivr`), SQLi (`whereRaw` statis), XSS (`{{ }}` escaped).
+Risiko baru: tidak ada (tidak ada cache lintas-entitas; angka keuangan tanpa cache = fresh; otorisasi/audit/ledger tak dikurangi).
+Batasan: angka performa = dev-lokal, bukan klaim produksi. Suite penuh tidak diulang (larangan paralel).
+
 ## 1. Ringkasan arsitektur
 Modular monolith Laravel 11 + PHP 8.3 + MySQL 8.4 + Blade + Tabler lokal (Vite `public/build`, tanpa CDN). RBAC native (16 role / 60+ permission) via middleware `perm` + `ReadOnlyRoles` (auditor/viewer) + `CheckActiveUser` + `SecurityHeaders`. Isolasi entitas via `CrudController::baseQuery` (konteks sesi `erp_context`) + guard manual per controller + API `guardEntity`. Transaksi memakai `DB::transaction` + `lockForUpdate` + histori (`doc_status_histories`, `stock_ledgers`/`stock_balances`, `journal_lines`, `sales_payments`) + idempotency (`journals.idempotency_key`, `pos_sales.client_ref` + unique index, `DocNumberService` dengan lock).
 

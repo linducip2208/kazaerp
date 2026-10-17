@@ -13,4 +13,7 @@ return [
         'pattern' => '{ENTITY}/{BRANCH}/{TYPE}/{YYYY}/{MM}/{SEQ:5}',
         'reset' => 'monthly', // per entitas+cabang+tipe+periode
     ],
+    // Mode demo AMAN: default mati. DemoSeeder + demo:seed menolak production
+    // kecuali DEMO_ENABLED=true (dan --force untuk command).
+    'demo_enabled' => env('DEMO_ENABLED', false),
 ];
