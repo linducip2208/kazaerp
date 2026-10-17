@@ -1,5 +1,10 @@
-@extends('layouts.tabler')
+@extends('layouts.auth')
 @section('title','Halaman Tidak Ditemukan')
-@section('content')
-<div class="empty-state"><h1>404</h1><p>Halaman Tidak Ditemukan — silakan kembali ke <a href="{{ route('dashboard') }}">dashboard</a>.</p></div>
+@section('heading','404')
+@section('sub','Halaman tidak ditemukan.')
+@section('form')
+<div class="d-grid gap-2">
+<a href="{{ route('dashboard') }}" class="btn btn-primary">Ke dashboard</a>
+<a href="{{ route('login') }}" class="btn btn-link">Kembali masuk</a>
+</div>
 @endsection

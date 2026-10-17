@@ -1,5 +1,10 @@
 # Changelog
 
+## v0.5.3 — 2026-10-17
+- Layar auth dirombak ke **split-screen landscape** ala house-style (panel brand gradient + poin fitur + form): layout baru `layouts/auth.blade.php` dipakai login/lupa/reset/2FA challenge; tombol gradient, tanpa dependensi/CDN baru (Tabler + CSS sendiri via `npm run build` → `public/build`, CSS 837 KB).
+- Fix: halaman error 403/404/500 kini memakai layout mandiri — sebelumnya extends `layouts.tabler` yang butuh login, sehingga tamu yang kena 404 malah mendapat 500.
+- Verifikasi: `test_password_reset_mandiri_penuh` hijau (10 assertions); curl `/login` + `/forgot-password` 200 ber-layout baru; `/password/reset` tanpa token kini 404 yang benar.
+
 ## v0.5.2 — 2026-10-16
 - **Fix bug rilis**: permission `INTERNET` ditambahkan ke `AndroidManifest.xml` utama — APK rilis v0.5.1 tidak dapat memanggil API sama sekali (template Flutter hanya menaruh permission di manifest debug); `android:usesCleartextTraffic="true"` menyalakan HTTP untuk server dev (produksi tetap wajib HTTPS).
 - **Verifikasi end-to-end dari APK rilis di emulator Android** (bukan sekadar build): install → login (`POST /api/v1/login`, token Sanctum id=2) → buka shift kas 100.000 (`POST /api/v1/pos/shift/open`) → katalog dimuat (`GET /api/v1/products`) → keranjang → `POST /api/v1/pos/checkout` → penjualan **MZA-HOLD/PST/POS/2026/10/00002** (paid, total 83.250) + ledger stok `pos_sale #2` = −1; `kaza:audit-integrity` OK 0 temuan (rincian & screenshot: TEST_RESULTS.md).

@@ -1,5 +1,11 @@
 # Test Results (dari run nyata — bukan klaim)
 
+## Web v0.5.3 (auth landscape + error views) — 2026-10-17
+- Alasan: login kazaerp tampil kartu polos tanpa landscape (beda gaya dengan project lain yang split-screen); investigasi membuktikan Tabler asli & terkompilasi (CSS 837 KB, selector `.card/.btn-primary/.navbar/.table` ada, MIME benar) — masalahnya desain, bukan aset rusak.
+- Perubahan: `layouts/auth.blade.php` baru + `app.css` (+panel gradient, responsif: panel hilang di mobile) + 4 view auth + 3 view error mandiri; `npm run build` 20,54s sukses.
+- Verifikasi: `test_password_reset_mandiri_penuh` **passed (10 assertions)** — alur lupa→reset lewat view baru; curl `/login`, `/forgot-password` 200 + markup `auth-split`; `/password/reset` tanpa token kini **404** (sebelumnya 500 untuk tamu); tidak ada error baru di `laravel.log`.
+- Catatan: `public/build` tetap gitignored (dibangun saat deploy sesuai DEPLOYMENT.md).
+
 ## Mobile v0.5.2 (fix izin INTERNET + E2E dari APK rilis di emulator) — 2026-10-16
 - **Temuan & fix**: APK rilis v0.5.1 gagal memanggil API — manifest utama tidak memuat permission `INTERNET` (template Flutter hanya menaruhnya di manifest debug); app menampilkan "Tidak dapat terhubung ke server" dan tidak ada request yang tercatat di server. Fix: `INTERNET` + `android:usesCleartextTraffic="true"` (khusus server dev HTTP; produksi wajib HTTPS) → rebuild APK.
 - **E2E dari APK release** (`id.kazaka.pos_kaza` di emulator-5554, Android 17/API 37) — semua dijalankan dari UI app, bukan skrip:
